@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#12241F">
+    <title>كاشير — شاشة البيع</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="app-shell">
+
+        <!-- ==================== شريط الوردية العلوي ==================== -->
+        <header class="shift-bar">
+            <div class="shift-bar__info">
+                <span class="shift-bar__name" id="restaurant-name">كاشير</span>
+                <span class="shift-status shift-status--closed" id="shift-status-badge">
+                    <span class="shift-status__dot" aria-hidden="true"></span>
+                    <span id="shift-status-text">مغلقة</span>
+                </span>
+            </div>
+            <button type="button" class="shift-bar__action shift-bar__action--open" id="shift-toggle-btn">
+                فتح الوردية
+            </button>
+        </header>
+
+        <!-- ==================== المحتوى الرئيسي ==================== -->
+        <main class="cashier-main">
+
+            <nav class="category-scroll" id="category-scroll" aria-label="تصنيفات المنيو">
+                <!-- تُبنى ديناميكيًا -->
+            </nav>
+
+            <div id="menu-container">
+                <div class="empty-state" id="menu-empty-state">
+                    افتح الوردية أولًا لبدء البيع
+                </div>
+                <div class="menu-grid" id="menu-grid" style="display:none;"></div>
+            </div>
+
+        </main>
+
+        <!-- ==================== شريط السلة السفلي ==================== -->
+        <div class="cart-bar" id="cart-bar">
+            <div class="cart-bar__summary">
+                <span class="cart-bar__count" id="cart-count">0 أصناف</span>
+                <span class="cart-bar__total mono" id="cart-total">0 جنيه</span>
+            </div>
+            <button type="button" class="cart-bar__btn" id="open-cart-btn">
+                عرض السلة
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ==================== ورقة السلة ==================== -->
+    <div class="sheet-overlay" id="cart-sheet-overlay">
+        <div class="sheet">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <h2 class="sheet__title">سلة الطلب</h2>
+
+            <div id="cart-rows-container"></div>
+
+            <div class="cart-total-row">
+                <span>الإجمالي</span>
+                <span class="cart-total-row__amount mono" id="cart-sheet-total">0 جنيه</span>
+            </div>
+
+            <button type="button" class="btn btn--primary btn--lg" id="proceed-to-payment-btn" style="margin-top: var(--space-3);">
+                متابعة للدفع
+            </button>
+            <button type="button" class="btn btn--ghost" id="close-cart-sheet-btn" style="margin-top: var(--space-3);">
+                إغلاق
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== ورقة الدفع ==================== -->
+    <div class="sheet-overlay" id="payment-sheet-overlay">
+        <div class="sheet">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <h2 class="sheet__title">الدفع</h2>
+
+            <div class="amount-display">
+                <div class="amount-display__value mono" id="payment-total">0</div>
+                <div class="amount-display__label">جنيه سوداني</div>
+            </div>
+
+            <div id="payment-alert-box" class="alert" role="alert"></div>
+
+            <div class="payment-methods">
+                <button type="button" class="payment-method-btn" data-method="CASH" id="method-cash-btn">
+                    <span class="payment-method-btn__icon" aria-hidden="true">💵</span>
+                    <span>كاش</span>
+                </button>
+                <button type="button" class="payment-method-btn" data-method="BANKK" id="method-bankk-btn">
+                    <span class="payment-method-btn__icon" aria-hidden="true">📱</span>
+                    <span>بنكك</span>
+                </button>
+            </div>
+
+            <div class="bankk-details" id="bankk-details">
+                <div class="field">
+                    <label class="field__label" for="bankk-ref-input">رقم العملية (اختياري إن أرفقت صورة)</label>
+                    <input class="field__input" type="text" id="bankk-ref-input" inputmode="numeric" placeholder="رقم عملية بنكك">
+                </div>
+
+                <input type="file" accept="image/*" capture="environment" id="bankk-photo-input" style="display:none;">
+                <button type="button" class="photo-capture-btn" id="bankk-photo-btn">
+                    📷 التقاط صورة إشعار بنكك
+                </button>
+                <img class="photo-preview" id="bankk-photo-preview" alt="معاينة صورة الإشعار">
+            </div>
+
+            <button type="button" class="field" id="order-type-field" style="width:100%; text-align:right; background:none; border:none; padding:0; margin-top: var(--space-4);">
+                <div class="field__label">نوع الطلب</div>
+            </button>
+            <div class="tabs" role="tablist" aria-label="نوع الطلب" id="order-type-tabs">
+                <button type="button" class="tabs__btn is-active" data-type="DINE_IN">صالة</button>
+                <button type="button" class="tabs__btn" data-type="TAKEAWAY">تيك أواي</button>
+                <button type="button" class="tabs__btn" data-type="DELIVERY">توصيل</button>
+            </div>
+
+            <div class="field" id="table-number-field">
+                <label class="field__label" for="table-number-input">رقم الطاولة (اختياري)</label>
+                <input class="field__input" type="text" id="table-number-input" inputmode="numeric" placeholder="مثال: 5">
+            </div>
+
+            <button type="button" class="btn btn--primary btn--lg" id="confirm-order-btn" style="margin-top: var(--space-3);">
+                <span class="spinner" aria-hidden="true"></span>
+                <span class="btn__label">تأكيد الطلب</span>
+            </button>
+            <button type="button" class="btn btn--ghost" id="close-payment-sheet-btn" style="margin-top: var(--space-3);">
+                رجوع
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== ورقة فتح/إغلاق الوردية ==================== -->
+    <div class="sheet-overlay" id="shift-sheet-overlay">
+        <div class="sheet">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <h2 class="sheet__title" id="shift-sheet-title">فتح وردية جديدة</h2>
+
+            <div id="shift-alert-box" class="alert" role="alert"></div>
+
+            <!-- محتوى فتح الوردية -->
+            <div id="shift-open-content">
+                <div class="field">
+                    <label class="field__label" for="opening-balance-input">الرصيد الافتتاحي (كاش)</label>
+                    <input class="field__input mono" type="number" id="opening-balance-input" inputmode="numeric" placeholder="0" min="0">
+                </div>
+                <button type="button" class="btn btn--primary btn--lg" id="confirm-open-shift-btn">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <span class="btn__label">فتح الوردية</span>
+                </button>
+            </div>
+
+            <!-- محتوى إغلاق الوردية -->
+            <div id="shift-close-content" style="display:none;">
+                <div class="field">
+                    <label class="field__label" for="actual-cash-input">المبلغ الفعلي بالصندوق (كاش)</label>
+                    <input class="field__input mono" type="number" id="actual-cash-input" inputmode="numeric" placeholder="0" min="0">
+                </div>
+                <button type="button" class="btn btn--primary btn--lg" id="confirm-close-shift-btn">
+                    <span class="spinner" aria-hidden="true"></span>
+                    <span class="btn__label">إغلاق الوردية</span>
+                </button>
+            </div>
+
+            <button type="button" class="btn btn--ghost" id="close-shift-sheet-btn" style="margin-top: var(--space-3);">
+                إلغاء
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== ورقة تأكيد نجاح الطلب ==================== -->
+    <div class="sheet-overlay" id="success-sheet-overlay">
+        <div class="sheet" style="text-align:center;">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <div style="font-size:48px; margin: var(--space-3) 0;">✅</div>
+            <h2 class="sheet__title">تم الطلب بنجاح</h2>
+            <p class="mono" id="success-order-id" style="color:var(--color-text-muted); margin-bottom: var(--space-5);"></p>
+
+            <button type="button" class="btn btn--primary btn--lg" id="print-receipt-btn">
+                🖨️ طباعة الإيصال
+            </button>
+            <button type="button" class="btn btn--ghost" id="new-order-btn" style="margin-top: var(--space-3);">
+                طلب جديد
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== إيصال الطباعة (مخفي إلا عند الطباعة) ==================== -->
+    <div class="print-receipt" id="print-receipt-content">
+        <div class="print-receipt__center">
+            <strong id="print-restaurant-name">اسم المطعم</strong><br>
+            <span id="print-order-id"></span><br>
+            <span id="print-datetime"></span>
+        </div>
+        <hr>
+        <table id="print-items-table"></table>
+        <hr>
+        <table>
+            <tr><td>الإجمالي</td><td style="text-align:left;"><strong id="print-total"></strong></td></tr>
+            <tr><td>طريقة الدفع</td><td style="text-align:left;" id="print-payment-method"></td></tr>
+        </table>
+    </div>
+
+    <script src="/app.js"></script>
+    <script src="/cashier.js"></script>
+</body>
+</html>
