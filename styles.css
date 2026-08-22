@@ -974,6 +974,135 @@ a {
 }
 
 /* ----------------------------------------------------------------------------
+   لوحة صاحب المطعم (dashboard.html)
+   ---------------------------------------------------------------------------- */
+.dash-section {
+    padding-top: var(--space-4);
+}
+
+/* شبكة بطاقات الإحصائيات */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+}
+
+.stat-card {
+    background: var(--color-bg-elevated);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.stat-card__label {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.stat-card__value {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.stat-card--cash .stat-card__value {
+    color: var(--color-cash);
+}
+
+.stat-card--bankk .stat-card__value {
+    color: var(--color-bankk);
+}
+
+/* صفوف قوائم الإدارة (منيو / ورديات / بنكك) — نمط بطاقة أفقية */
+.admin-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg-elevated);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--space-3);
+}
+
+.admin-row__main {
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-row__title {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.admin-row__subtitle {
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+}
+
+.admin-row__meta {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-text-muted);
+    text-align: left;
+}
+
+.admin-row__actions {
+    display: flex;
+    gap: var(--space-2);
+    flex-shrink: 0;
+}
+
+.admin-row__icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--color-bg);
+    border: 1.5px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+
+/* شارة صغيرة (متوفر/نفد، كاش/بنكك، مفتوحة/مغلقة) */
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+}
+
+.pill--available {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+.pill--unavailable {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+.pill--cash {
+    background: rgba(111, 162, 135, 0.14);
+    color: var(--color-cash);
+}
+
+.pill--bankk {
+    background: rgba(79, 166, 216, 0.14);
+    color: var(--color-bankk);
+}
+
+/* ----------------------------------------------------------------------------
    استجابة للشاشات الأكبر (اختياري بسيط — التصميم أساسًا Mobile-First)
    ---------------------------------------------------------------------------- */
 @media (min-width: 640px) {
