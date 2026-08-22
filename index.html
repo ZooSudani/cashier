@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#12241F">
+    <title>كاشير — تسجيل الدخول</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- ========================================================================
+         ملف مكتفٍ ذاتيًا: CSS وJS مضمّنان هنا مباشرة لتسهيل النسخ من الهاتف.
+         نفس هذا التنسيق (Design Tokens) موجود أيضًا في public/styles.css
+         كملف منفصل مشترك سيُستخدم في cashier.html / dashboard.html / admin.html
+         القادمة، حتى لا يتكرر تحميله يدويًا هناك أيضًا إن رغبت.
+         ======================================================================== -->
+    <style>
+/* ============================================================================
+   styles.css — كاشير (cashier)
+   نظام تصميم مشترك لكل صفحات المشروع (index / cashier / dashboard / admin)
+   RTL | عربي | Mobile-First | Touch-First
+   ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+/* ----------------------------------------------------------------------------
+   Design Tokens
+   ---------------------------------------------------------------------------- */
+:root {
+    /* ألوان — مستوحاة من إيصال الطباعة الحرارية وليل النيل */
+    --color-bg:            #12241F;   /* تيل داكن قريب من الأسود، لا أسود خالص */
+    --color-bg-elevated:   #17332B;   /* سطح البطاقات */
+    --color-bg-elevated-2: #1D3D33;   /* سطح أعلى (hover/active) */
+    --color-border:        rgba(243, 238, 223, 0.12);
+    --color-border-strong: rgba(243, 238, 223, 0.24);
+
+    --color-text:          #F3EEDF;   /* لون ورق الإيصال الدافئ */
+    --color-text-muted:    #9FB6AC;
+    --color-text-faint:    #6E8981;
+
+    --color-accent:        #E8A33D;   /* كركمي/زعفراني — بهارات سودانية */
+    --color-accent-strong: #F4B942;
+    --color-accent-text:   #1A1305;   /* نص فوق لون التمييز */
+
+    --color-success:       #6FA287;
+    --color-success-bg:    rgba(111, 162, 135, 0.14);
+    --color-danger:        #E0644E;
+    --color-danger-bg:     rgba(224, 100, 78, 0.14);
+    --color-cash:          #6FA287;   /* لون ثابت لطريقة الدفع كاش */
+    --color-bankk:         #4FA6D8;   /* لون ثابت لطريقة الدفع بنكك */
+
+    /* الطباعة */
+    --font-display: 'Tajawal', 'Segoe UI', sans-serif;
+    --font-body:    'IBM Plex Sans Arabic', 'Segoe UI', sans-serif;
+    --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
+
+    /* المسافات */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+
+    --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.35);
+
+    /* ارتفاعات لمس مريحة (Touch-First) */
+    --tap-target-min: 48px;
+    --tap-target-lg: 64px;
+}
+
+/* ----------------------------------------------------------------------------
+   إعادة ضبط أساسية
+   ---------------------------------------------------------------------------- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    direction: rtl;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    line-height: 1.5;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain;
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+}
+
+input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+::selection {
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+}
+
+/* احترام تفضيل تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   تنسيقات مشتركة عامة
+   ---------------------------------------------------------------------------- */
+.app-shell {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+}
+
+/* عنصر مميز: حافة مسننة تحاكي قصّ إيصال الطابعة الحرارية */
+.receipt-edge {
+    height: 14px;
+    width: 100%;
+    background:
+        linear-gradient(135deg, var(--color-bg-elevated) 50%, transparent 50%) 0 0 / 16px 16px repeat-x,
+        linear-gradient(-135deg, var(--color-bg-elevated) 50%, transparent 50%) 0 0 / 16px 16px repeat-x;
+    background-position: 0 0, 8px 0;
+}
+
+.receipt-edge--top {
+    transform: scaleY(-1);
+}
+
+/* خط متقطع يشبه نقاط الطباعة الحرارية */
+.dot-divider {
+    border: none;
+    border-top: 2px dotted var(--color-border-strong);
+    margin: var(--space-4) 0;
+}
+
+/* بطاقات */
+.card {
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+.card__body {
+    padding: var(--space-6) var(--space-5);
+}
+
+/* حقول الإدخال */
+.field {
+    margin-bottom: var(--space-4);
+}
+
+.field__label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-2);
+}
+
+.field__input {
+    width: 100%;
+    min-height: var(--tap-target-min);
+    padding: 0 var(--space-4);
+    background: var(--color-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: 16px; /* يمنع تكبير الصفحة تلقائيًا في iOS عند التركيز */
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.field__input::placeholder {
+    color: var(--color-text-faint);
+}
+
+.field__input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    background: var(--color-bg-elevated-2);
+}
+
+.field__input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+}
+
+/* أزرار */
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    width: 100%;
+    min-height: var(--tap-target-min);
+    padding: 0 var(--space-5);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    transition: transform 0.08s ease, filter 0.15s ease, opacity 0.15s ease;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.btn--primary {
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+}
+
+.btn--primary:hover {
+    filter: brightness(1.06);
+}
+
+.btn--ghost {
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1.5px solid var(--color-border);
+}
+
+.btn--ghost:hover {
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
+
+.btn--danger {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.btn--lg {
+    min-height: var(--tap-target-lg);
+    font-size: 18px;
+}
+
+/* تبويبات (مثال: تسجيل دخول مطعم / مدير المنصة) */
+.tabs {
+    display: flex;
+    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: var(--space-5);
+    border: 1.5px solid var(--color-border);
+}
+
+.tabs__btn {
+    flex: 1;
+    min-height: 40px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tabs__btn.is-active {
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+}
+
+/* رسائل الحالة (خطأ/نجاح) */
+.alert {
+    display: none;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: var(--space-4);
+    animation: alert-in 0.2s ease;
+}
+
+.alert.is-visible {
+    display: block;
+}
+
+.alert--danger {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+.alert--success {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+@keyframes alert-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* شارات الأرقام/المبالغ (نمط الإيصال) */
+.mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+/* مؤشر تحميل بسيط داخل الأزرار */
+.spinner {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2.5px solid currentColor;
+    border-left-color: transparent;
+    animation: spin 0.7s linear infinite;
+    display: none;
+}
+
+.is-loading .spinner {
+    display: inline-block;
+}
+
+.is-loading .btn__label {
+    opacity: 0.7;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ----------------------------------------------------------------------------
+   صفحة تسجيل الدخول (index.html)
+   ---------------------------------------------------------------------------- */
+.login-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5) 0;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(232, 163, 61, 0.08), transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(79, 166, 216, 0.06), transparent 45%),
+        var(--color-bg);
+}
+
+.login-brand {
+    text-align: center;
+    margin-bottom: var(--space-6);
+}
+
+.login-brand__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 28px;
+    margin-bottom: var(--space-4);
+    box-shadow: 0 6px 20px rgba(232, 163, 61, 0.25);
+}
+
+.login-brand__title {
+    font-size: 28px;
+    letter-spacing: -0.02em;
+}
+
+.login-brand__subtitle {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin-top: var(--space-1);
+}
+
+.login-card {
+    width: 100%;
+}
+
+.login-card__printhead {
+    background: var(--color-bg-elevated);
+    padding-top: var(--space-2);
+}
+
+.login-footer-link {
+    text-align: center;
+    margin-top: var(--space-5);
+    font-size: 13px;
+    color: var(--color-text-faint);
+}
+
+.login-footer-link button {
+    color: var(--color-accent);
+    font-weight: 600;
+}
+
+/* ----------------------------------------------------------------------------
+   استجابة للشاشات الأكبر (اختياري بسيط — التصميم أساسًا Mobile-First)
+   ---------------------------------------------------------------------------- */
+@media (min-width: 640px) {
+    .container {
+        max-width: 420px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <main class="login-page">
+            <div class="container">
+
+                <!-- العلامة -->
+                <div class="login-brand">
+                    <div class="login-brand__mark" aria-hidden="true">ك</div>
+                    <h1 class="login-brand__title">كاشير</h1>
+                    <p class="login-brand__subtitle">نظام إدارة المطاعم — السودان</p>
+                </div>
+
+                <!-- بطاقة الدخول -->
+                <div class="card login-card">
+                    <!-- العنصر المميز: حافة مسننة تحاكي قصّ إيصال الطابعة -->
+                    <div class="receipt-edge receipt-edge--top" aria-hidden="true"></div>
+
+                    <div class="card__body login-card__printhead">
+
+                        <!-- تبويب: دخول مطعم / دخول مدير المنصة -->
+                        <div class="tabs" role="tablist" aria-label="نوع الدخول">
+                            <button type="button" class="tabs__btn is-active" id="tab-restaurant" role="tab" aria-selected="true">
+                                دخول مطعم
+                            </button>
+                            <button type="button" class="tabs__btn" id="tab-super-admin" role="tab" aria-selected="false">
+                                مدير المنصة
+                            </button>
+                        </div>
+
+                        <div id="alert-box" class="alert" role="alert"></div>
+
+                        <form id="login-form" novalidate>
+                            <div class="field" id="field-restaurant-slug">
+                                <label class="field__label" for="restaurant-slug">معرّف المطعم</label>
+                                <input
+                                    class="field__input"
+                                    type="text"
+                                    id="restaurant-slug"
+                                    name="restaurantSlug"
+                                    placeholder="مثال: مطعم-الوادي"
+                                    autocomplete="off"
+                                    autocapitalize="off"
+                                    spellcheck="false"
+                                >
+                            </div>
+
+                            <div class="field">
+                                <label class="field__label" for="username">اسم المستخدم</label>
+                                <input
+                                    class="field__input"
+                                    type="text"
+                                    id="username"
+                                    name="username"
+                                    placeholder="اسم المستخدم"
+                                    autocomplete="username"
+                                    autocapitalize="off"
+                                    spellcheck="false"
+                                    required
+                                >
+                            </div>
+
+                            <div class="field">
+                                <label class="field__label" for="password">كلمة المرور</label>
+                                <input
+                                    class="field__input"
+                                    type="password"
+                                    id="password"
+                                    name="password"
+                                    placeholder="••••••••"
+                                    autocomplete="current-password"
+                                    required
+                                >
+                            </div>
+
+                            <button type="submit" class="btn btn--primary btn--lg" id="login-submit">
+                                <span class="spinner" aria-hidden="true"></span>
+                                <span class="btn__label">تسجيل الدخول</span>
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+
+                <p class="login-footer-link">
+                    أول مرة تشغّل النظام؟
+                    <button type="button" id="open-setup">إعداد حساب مدير المنصة</button>
+                </p>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ============================================================
+         نافذة الإعداد الأول (Setup) — تظهر فقط عند الحاجة، ومخفية افتراضيًا
+         ============================================================ -->
+    <div class="app-shell" id="setup-overlay" style="display:none; position:fixed; inset:0; background:rgba(18,36,31,0.92); z-index:50; align-items:center; justify-content:center; padding: var(--space-4);">
+        <div class="container">
+            <div class="card">
+                <div class="card__body">
+                    <h2 style="font-size:20px; margin-bottom: var(--space-2);">إعداد أول حساب مدير</h2>
+                    <p style="color:var(--color-text-muted); font-size:14px; margin-bottom: var(--space-5);">
+                        يعمل هذا مرة واحدة فقط عند أول تشغيل للنظام.
+                    </p>
+
+                    <div id="setup-alert-box" class="alert" role="alert"></div>
+
+                    <form id="setup-form" novalidate>
+                        <div class="field">
+                            <label class="field__label" for="setup-username">اسم المستخدم</label>
+                            <input class="field__input" type="text" id="setup-username" required autocomplete="off" autocapitalize="off" spellcheck="false">
+                        </div>
+                        <div class="field">
+                            <label class="field__label" for="setup-password">كلمة المرور (8 أحرف على الأقل)</label>
+                            <input class="field__input" type="password" id="setup-password" required autocomplete="new-password">
+                        </div>
+
+                        <button type="submit" class="btn btn--primary btn--lg" id="setup-submit">
+                            <span class="spinner" aria-hidden="true"></span>
+                            <span class="btn__label">إنشاء الحساب</span>
+                        </button>
+                        <button type="button" class="btn btn--ghost" id="setup-cancel" style="margin-top: var(--space-3);">
+                            إلغاء
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================================
+         JS مضمّن هنا مباشرة (بدل استدعاء app.js خارجيًا) — نفس منطق أدوات
+         apiRequest / redirectByRole وغيرها موجود أيضًا في public/app.js
+         كملف مشترك منفصل جاهز للصفحات القادمة.
+         ======================================================================== -->
+    <script>
+// ============================================================================
+// app.js — كاشير (cashier)
+// أدوات مشتركة تُستخدم عبر كل صفحات المشروع (index / cashier / dashboard / admin)
+// Vanilla JS — بدون أي إطار عمل
+// ============================================================================
+
+/**
+ * غلاف موحّد لطلبات API — يرسل الجلسة تلقائيًا عبر Cookie (credentials: 'include')
+ * ويُرجع دائمًا { ok, status, data } بدل رمي استثناءات متفرقة، لتسهيل التعامل
+ * الموحّد مع الأخطاء في كل الصفحات.
+ */
+async function apiRequest(path, options = {}) {
+    const { method = "GET", body, headers = {}, isFormData = false } = options;
+
+    const fetchOptions = {
+        method,
+        credentials: "include", // إرسال Cookie الجلسة (httpOnly) تلقائيًا
+        headers: { ...headers },
+    };
+
+    if (body !== undefined) {
+        if (isFormData) {
+            fetchOptions.body = body; // FormData يضبط Content-Type تلقائيًا مع boundary
+        } else {
+            fetchOptions.headers["Content-Type"] = "application/json";
+            fetchOptions.body = JSON.stringify(body);
+        }
+    }
+
+    let response;
+    try {
+        response = await fetch(`/api${path}`, fetchOptions);
+    } catch (networkErr) {
+        // فشل شبكة (انقطاع اتصال) — يُترك للصفحة المستدعية قرار التعامل معه
+        // (مثلًا: تفعيل وضع Offline لاحقًا في المرحلة 8)
+        return { ok: false, status: 0, data: { error: "تعذّر الاتصال بالخادم", code: "NETWORK_ERROR" } };
+    }
+
+    let data = null;
+    try {
+        data = await response.json();
+    } catch {
+        data = null;
+    }
+
+    return { ok: response.ok, status: response.status, data };
+}
+
+/** توجيه المستخدم إلى الصفحة المناسبة حسب دوره بعد تسجيل الدخول */
+function redirectByRole(role) {
+    if (role === "SUPER_ADMIN") {
+        window.location.href = "/admin.html";
+    } else if (role === "RESTAURANT_ADMIN") {
+        window.location.href = "/dashboard.html";
+    } else if (role === "CASHIER") {
+        window.location.href = "/cashier.html";
+    } else {
+        window.location.href = "/";
+    }
+}
+
+/**
+ * حارس صفحة: يتحقق من الدور المطلوب لعرض الصفحة الحالية عبر استدعاء خفيف
+ * لأحد الـ Endpoints المحمية. إن فشل التحقق (غير مسجّل دخول أو دور غير مطابق)
+ * يعيد التوجيه لصفحة الدخول. يُستخدم في بداية سكربت كل صفحة محمية
+ * (cashier.js / dashboard.js / admin.js).
+ */
+async function guardPage(allowedCheckPath) {
+    const result = await apiRequest(allowedCheckPath);
+    if (result.status === 401) {
+        window.location.href = "/";
+        return false;
+    }
+    if (result.status === 403) {
+        // مسجّل دخول لكن بدور لا يملك صلاحية هذه الصفحة تحديدًا
+        window.location.href = "/";
+        return false;
+    }
+    return true;
+}
+
+/** تنسيق مبلغ بالجنيه السوداني بفواصل الآلاف */
+function formatSDG(amount) {
+    const value = Number(amount) || 0;
+    return value.toLocaleString("ar-SD", { maximumFractionDigits: 0 }) + " جنيه";
+}
+
+/** تنسيق وقت/تاريخ بتوقيت Africa/Khartoum لعرض بشري */
+function formatKhartoumTime(isoString) {
+    if (!isoString) return "—";
+    try {
+        return new Date(isoString).toLocaleString("ar-SD", {
+            timeZone: "Africa/Khartoum",
+            hour: "2-digit",
+            minute: "2-digit",
+            day: "2-digit",
+            month: "2-digit",
+        });
+    } catch {
+        return isoString;
+    }
+}
+
+/** إظهار رسالة تنبيه (خطأ/نجاح) داخل عنصر alert موجود في الصفحة */
+function showAlert(alertEl, message, type = "danger") {
+    if (!alertEl) return;
+    alertEl.textContent = message;
+    alertEl.classList.remove("alert--danger", "alert--success");
+    alertEl.classList.add(type === "success" ? "alert--success" : "alert--danger", "is-visible");
+}
+
+function hideAlert(alertEl) {
+    if (!alertEl) return;
+    alertEl.classList.remove("is-visible");
+}
+
+/** تفعيل/تعطيل حالة التحميل على زر (يعرض Spinner ويمنع الضغط المزدوج) */
+function setButtonLoading(buttonEl, isLoading) {
+    if (!buttonEl) return;
+    buttonEl.classList.toggle("is-loading", isLoading);
+    buttonEl.disabled = isLoading;
+}
+
+        (function () {
+            const tabRestaurant   = document.getElementById("tab-restaurant");
+            const tabSuperAdmin   = document.getElementById("tab-super-admin");
+            const fieldSlug       = document.getElementById("field-restaurant-slug");
+            const slugInput       = document.getElementById("restaurant-slug");
+
+            const loginForm       = document.getElementById("login-form");
+            const loginSubmit     = document.getElementById("login-submit");
+            const alertBox        = document.getElementById("alert-box");
+
+            const usernameInput   = document.getElementById("username");
+            const passwordInput   = document.getElementById("password");
+
+            const openSetupBtn    = document.getElementById("open-setup");
+            const setupOverlay    = document.getElementById("setup-overlay");
+            const setupForm       = document.getElementById("setup-form");
+            const setupSubmit     = document.getElementById("setup-submit");
+            const setupAlertBox   = document.getElementById("setup-alert-box");
+            const setupCancelBtn  = document.getElementById("setup-cancel");
+
+            let mode = "restaurant"; // أو "super-admin"
+
+            // ---------------- تبديل التبويبات ----------------
+            function setMode(newMode) {
+                mode = newMode;
+                const isRestaurant = mode === "restaurant";
+
+                tabRestaurant.classList.toggle("is-active", isRestaurant);
+                tabRestaurant.setAttribute("aria-selected", String(isRestaurant));
+                tabSuperAdmin.classList.toggle("is-active", !isRestaurant);
+                tabSuperAdmin.setAttribute("aria-selected", String(!isRestaurant));
+
+                fieldSlug.style.display = isRestaurant ? "block" : "none";
+                slugInput.required = isRestaurant;
+
+                hideAlert(alertBox);
+            }
+
+            tabRestaurant.addEventListener("click", () => setMode("restaurant"));
+            tabSuperAdmin.addEventListener("click", () => setMode("super-admin"));
+
+            // ---------------- إرسال نموذج الدخول ----------------
+            loginForm.addEventListener("submit", async function (e) {
+                e.preventDefault();
+                hideAlert(alertBox);
+
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value;
+                const restaurantSlug = mode === "restaurant" ? slugInput.value.trim() : undefined;
+
+                if (!username || !password) {
+                    showAlert(alertBox, "الرجاء إدخال اسم المستخدم وكلمة المرور");
+                    return;
+                }
+                if (mode === "restaurant" && !restaurantSlug) {
+                    showAlert(alertBox, "الرجاء إدخال معرّف المطعم");
+                    return;
+                }
+
+                setButtonLoading(loginSubmit, true);
+
+                const result = await apiRequest("/auth/login", {
+                    method: "POST",
+                    body: { username, password, restaurantSlug },
+                });
+
+                setButtonLoading(loginSubmit, false);
+
+                if (!result.ok) {
+                    const message = (result.data && result.data.error) || "تعذّر تسجيل الدخول";
+                    showAlert(alertBox, message);
+                    return;
+                }
+
+                // تخزين بيانات عرض بسيطة (اسم المستخدم/الدور) لاستخدامها في
+                // رأس الصفحات التالية فقط — ليست بيانات جلسة حساسة، فالجلسة
+                // الفعلية محفوظة في Cookie بخاصية HttpOnly ولا تُقرأ من هنا إطلاقًا.
+                try {
+                    sessionStorage.setItem("cashier_display_username", result.data.user.username);
+                    sessionStorage.setItem("cashier_display_role", result.data.user.role);
+                } catch (e) { /* يُتجاهل إن كان sessionStorage غير متاح */ }
+
+                redirectByRole(result.data.user.role);
+            });
+
+            // ---------------- نافذة الإعداد الأول ----------------
+            openSetupBtn.addEventListener("click", () => {
+                setupOverlay.style.display = "flex";
+            });
+            setupCancelBtn.addEventListener("click", () => {
+                setupOverlay.style.display = "none";
+                hideAlert(setupAlertBox);
+            });
+
+            setupForm.addEventListener("submit", async function (e) {
+                e.preventDefault();
+                hideAlert(setupAlertBox);
+
+                const username = document.getElementById("setup-username").value.trim();
+                const password = document.getElementById("setup-password").value;
+
+                if (!username || !password) {
+                    showAlert(setupAlertBox, "جميع الحقول مطلوبة");
+                    return;
+                }
+                if (password.length < 8) {
+                    showAlert(setupAlertBox, "كلمة المرور يجب ألا تقل عن 8 أحرف");
+                    return;
+                }
+
+                setButtonLoading(setupSubmit, true);
+
+                const result = await apiRequest("/auth/setup", {
+                    method: "POST",
+                    body: { username, password },
+                });
+
+                setButtonLoading(setupSubmit, false);
+
+                if (!result.ok) {
+                    const message = (result.data && result.data.error) || "تعذّر إنشاء الحساب";
+                    showAlert(setupAlertBox, message);
+                    return;
+                }
+
+                showAlert(setupAlertBox, "تم إنشاء الحساب بنجاح، يمكنك تسجيل الدخول الآن", "success");
+                setTimeout(() => {
+                    setupOverlay.style.display = "none";
+                    setMode("super-admin");
+                    document.getElementById("username").value = username;
+                    document.getElementById("password").focus();
+                }, 1200);
+            });
+        })();
+    </script>
+</body>
+</html>
