@@ -1,0 +1,983 @@
+/* ============================================================================
+   styles.css — كاشير (cashier)
+   نظام تصميم مشترك لكل صفحات المشروع (index / cashier / dashboard / admin)
+   RTL | عربي | Mobile-First | Touch-First
+   ============================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+/* ----------------------------------------------------------------------------
+   Design Tokens
+   ---------------------------------------------------------------------------- */
+:root {
+    /* ألوان — مستوحاة من إيصال الطباعة الحرارية وليل النيل */
+    --color-bg:            #12241F;   /* تيل داكن قريب من الأسود، لا أسود خالص */
+    --color-bg-elevated:   #17332B;   /* سطح البطاقات */
+    --color-bg-elevated-2: #1D3D33;   /* سطح أعلى (hover/active) */
+    --color-border:        rgba(243, 238, 223, 0.12);
+    --color-border-strong: rgba(243, 238, 223, 0.24);
+
+    --color-text:          #F3EEDF;   /* لون ورق الإيصال الدافئ */
+    --color-text-muted:    #9FB6AC;
+    --color-text-faint:    #6E8981;
+
+    --color-accent:        #E8A33D;   /* كركمي/زعفراني — بهارات سودانية */
+    --color-accent-strong: #F4B942;
+    --color-accent-text:   #1A1305;   /* نص فوق لون التمييز */
+
+    --color-success:       #6FA287;
+    --color-success-bg:    rgba(111, 162, 135, 0.14);
+    --color-danger:        #E0644E;
+    --color-danger-bg:     rgba(224, 100, 78, 0.14);
+    --color-cash:          #6FA287;   /* لون ثابت لطريقة الدفع كاش */
+    --color-bankk:         #4FA6D8;   /* لون ثابت لطريقة الدفع بنكك */
+
+    /* الطباعة */
+    --font-display: 'Tajawal', 'Segoe UI', sans-serif;
+    --font-body:    'IBM Plex Sans Arabic', 'Segoe UI', sans-serif;
+    --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
+
+    /* المسافات */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 24px;
+    --space-6: 32px;
+    --space-7: 48px;
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-lg: 20px;
+
+    --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.35);
+
+    /* ارتفاعات لمس مريحة (Touch-First) */
+    --tap-target-min: 48px;
+    --tap-target-lg: 64px;
+}
+
+/* ----------------------------------------------------------------------------
+   إعادة ضبط أساسية
+   ---------------------------------------------------------------------------- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    direction: rtl;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    font-family: var(--font-body);
+    background: var(--color-bg);
+    color: var(--color-text);
+    min-height: 100vh;
+    min-height: 100dvh;
+    line-height: 1.5;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: contain;
+}
+
+h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    color: inherit;
+}
+
+input, select, textarea {
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+::selection {
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+}
+
+/* احترام تفضيل تقليل الحركة */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   تنسيقات مشتركة عامة
+   ---------------------------------------------------------------------------- */
+.app-shell {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    width: 100%;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+}
+
+/* عنصر مميز: حافة مسننة تحاكي قصّ إيصال الطابعة الحرارية */
+.receipt-edge {
+    height: 14px;
+    width: 100%;
+    background:
+        linear-gradient(135deg, var(--color-bg-elevated) 50%, transparent 50%) 0 0 / 16px 16px repeat-x,
+        linear-gradient(-135deg, var(--color-bg-elevated) 50%, transparent 50%) 0 0 / 16px 16px repeat-x;
+    background-position: 0 0, 8px 0;
+}
+
+.receipt-edge--top {
+    transform: scaleY(-1);
+}
+
+/* خط متقطع يشبه نقاط الطباعة الحرارية */
+.dot-divider {
+    border: none;
+    border-top: 2px dotted var(--color-border-strong);
+    margin: var(--space-4) 0;
+}
+
+/* بطاقات */
+.card {
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    overflow: hidden;
+}
+
+.card__body {
+    padding: var(--space-6) var(--space-5);
+}
+
+/* حقول الإدخال */
+.field {
+    margin-bottom: var(--space-4);
+}
+
+.field__label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-2);
+}
+
+.field__input {
+    width: 100%;
+    min-height: var(--tap-target-min);
+    padding: 0 var(--space-4);
+    background: var(--color-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    color: var(--color-text);
+    font-size: 16px; /* يمنع تكبير الصفحة تلقائيًا في iOS عند التركيز */
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.field__input::placeholder {
+    color: var(--color-text-faint);
+}
+
+.field__input:focus {
+    outline: none;
+    border-color: var(--color-accent);
+    background: var(--color-bg-elevated-2);
+}
+
+.field__input:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 1px;
+}
+
+/* أزرار */
+.btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    width: 100%;
+    min-height: var(--tap-target-min);
+    padding: 0 var(--space-5);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 16px;
+    transition: transform 0.08s ease, filter 0.15s ease, opacity 0.15s ease;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.btn:active {
+    transform: scale(0.97);
+}
+
+.btn:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+}
+
+.btn--primary {
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+}
+
+.btn--primary:hover {
+    filter: brightness(1.06);
+}
+
+.btn--ghost {
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1.5px solid var(--color-border);
+}
+
+.btn--ghost:hover {
+    border-color: var(--color-border-strong);
+    color: var(--color-text);
+}
+
+.btn--danger {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.btn--lg {
+    min-height: var(--tap-target-lg);
+    font-size: 18px;
+}
+
+/* تبويبات (مثال: تسجيل دخول مطعم / مدير المنصة) */
+.tabs {
+    display: flex;
+    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    padding: 4px;
+    margin-bottom: var(--space-5);
+    border: 1.5px solid var(--color-border);
+}
+
+.tabs__btn {
+    flex: 1;
+    min-height: 40px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tabs__btn.is-active {
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+}
+
+/* رسائل الحالة (خطأ/نجاح) */
+.alert {
+    display: none;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: var(--space-4);
+    animation: alert-in 0.2s ease;
+}
+
+.alert.is-visible {
+    display: block;
+}
+
+.alert--danger {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+.alert--success {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+@keyframes alert-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* شارات الأرقام/المبالغ (نمط الإيصال) */
+.mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+/* مؤشر تحميل بسيط داخل الأزرار */
+.spinner {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2.5px solid currentColor;
+    border-left-color: transparent;
+    animation: spin 0.7s linear infinite;
+    display: none;
+}
+
+.is-loading .spinner {
+    display: inline-block;
+}
+
+.is-loading .btn__label {
+    opacity: 0.7;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ----------------------------------------------------------------------------
+   صفحة تسجيل الدخول (index.html)
+   ---------------------------------------------------------------------------- */
+.login-page {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-5) 0;
+    background:
+        radial-gradient(circle at 20% 10%, rgba(232, 163, 61, 0.08), transparent 40%),
+        radial-gradient(circle at 90% 90%, rgba(79, 166, 216, 0.06), transparent 45%),
+        var(--color-bg);
+}
+
+.login-brand {
+    text-align: center;
+    margin-bottom: var(--space-6);
+}
+
+.login-brand__mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 28px;
+    margin-bottom: var(--space-4);
+    box-shadow: 0 6px 20px rgba(232, 163, 61, 0.25);
+}
+
+.login-brand__title {
+    font-size: 28px;
+    letter-spacing: -0.02em;
+}
+
+.login-brand__subtitle {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin-top: var(--space-1);
+}
+
+.login-card {
+    width: 100%;
+}
+
+.login-card__printhead {
+    background: var(--color-bg-elevated);
+    padding-top: var(--space-2);
+}
+
+.login-footer-link {
+    text-align: center;
+    margin-top: var(--space-5);
+    font-size: 13px;
+    color: var(--color-text-faint);
+}
+
+.login-footer-link button {
+    color: var(--color-accent);
+    font-weight: 600;
+}
+
+/* ----------------------------------------------------------------------------
+   شاشة الكاشير (cashier.html)
+   ---------------------------------------------------------------------------- */
+
+/* شريط علوي ثابت: اسم المطعم + حالة الوردية + زر فتح/إغلاق */
+.shift-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg-elevated);
+    border-bottom: 1px solid var(--color-border);
+    padding-top: max(var(--space-3), env(safe-area-inset-top));
+}
+
+.shift-bar__info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-width: 0;
+}
+
+.shift-bar__name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shift-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+.shift-status--open {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+.shift-status--closed {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+.shift-status__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.shift-bar__action {
+    flex-shrink: 0;
+    min-height: 40px;
+    padding: 0 var(--space-4);
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 700;
+    font-family: var(--font-display);
+}
+
+.shift-bar__action--open {
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+}
+
+.shift-bar__action--close {
+    background: transparent;
+    border: 1.5px solid var(--color-border-strong);
+    color: var(--color-text-muted);
+}
+
+/* منطقة المحتوى الرئيسية لشاشة الكاشير */
+.cashier-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 96px; /* مساحة لشريط السلة السفلي الثابت */
+}
+
+/* رقائق التصنيفات القابلة للتمرير أفقيًا */
+.category-scroll {
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    padding: var(--space-3) var(--space-4);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.category-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.category-chip {
+    flex-shrink: 0;
+    min-height: 40px;
+    padding: 0 var(--space-4);
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    background: var(--color-bg-elevated);
+    border: 1.5px solid var(--color-border);
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.category-chip.is-active {
+    background: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-accent-text);
+}
+
+/* شبكة أصناف المنيو */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+    padding: 0 var(--space-4) var(--space-4);
+}
+
+@media (min-width: 480px) {
+    .menu-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.menu-item {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 92px;
+    padding: var(--space-3);
+    background: var(--color-bg-elevated);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-align: right;
+    transition: transform 0.08s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.menu-item:active {
+    transform: scale(0.96);
+    background: var(--color-bg-elevated-2);
+}
+
+.menu-item__name {
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 1.35;
+}
+
+.menu-item__price {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--color-accent);
+    font-weight: 600;
+    margin-top: var(--space-2);
+}
+
+.menu-item__qty-badge {
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 13px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.menu-item.has-qty .menu-item__qty-badge {
+    display: flex;
+}
+
+.menu-item--unavailable {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.empty-state {
+    text-align: center;
+    padding: var(--space-7) var(--space-4);
+    color: var(--color-text-faint);
+    font-size: 14px;
+}
+
+/* شريط السلة السفلي الثابت */
+.cart-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    padding: var(--space-3) var(--space-4);
+    padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+    background: var(--color-bg-elevated);
+    border-top: 1px solid var(--color-border);
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.3);
+}
+
+.cart-bar.is-visible {
+    display: flex;
+}
+
+.cart-bar__summary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.cart-bar__count {
+    font-size: 12px;
+    color: var(--color-text-muted);
+}
+
+.cart-bar__total {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.cart-bar__btn {
+    min-height: 48px;
+    padding: 0 var(--space-6);
+    border-radius: var(--radius-sm);
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+}
+
+/* أوراق سفلية منزلقة (Bottom Sheets): السلة / الدفع / فتح-إغلاق الوردية */
+.sheet-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(10, 20, 17, 0.7);
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.sheet-overlay.is-visible {
+    display: flex;
+}
+
+.sheet {
+    width: 100%;
+    max-width: 480px;
+    max-height: 88vh;
+    overflow-y: auto;
+    background: var(--color-bg-elevated);
+    border-radius: 22px 22px 0 0;
+    padding: var(--space-2) var(--space-5) var(--space-6);
+    padding-bottom: max(var(--space-6), env(safe-area-inset-bottom));
+}
+
+.sheet__handle {
+    width: 40px;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--color-border-strong);
+    margin: var(--space-3) auto var(--space-4);
+}
+
+.sheet__title {
+    font-size: 18px;
+    margin-bottom: var(--space-4);
+}
+
+/* صفوف عناصر السلة */
+.cart-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    padding: var(--space-3) 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.cart-row__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cart-row__name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.cart-row__notes {
+    font-size: 12px;
+    color: var(--color-text-faint);
+    margin-top: 2px;
+}
+
+.cart-row__unit-price {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+}
+
+.qty-stepper {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex-shrink: 0;
+}
+
+.qty-stepper__btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--color-bg);
+    border: 1.5px solid var(--color-border);
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qty-stepper__value {
+    min-width: 22px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-weight: 600;
+}
+
+.cart-row__subtotal {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 70px;
+    text-align: left;
+}
+
+.cart-total-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) 0 var(--space-2);
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.cart-total-row__amount {
+    font-family: var(--font-mono);
+    color: var(--color-accent);
+}
+
+/* أزرار طريقة الدفع */
+.payment-methods {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3);
+    margin: var(--space-4) 0;
+}
+
+.payment-method-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: 84px;
+    border-radius: var(--radius-md);
+    border: 2px solid var(--color-border);
+    background: var(--color-bg);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--color-text-muted);
+}
+
+.payment-method-btn__icon {
+    font-size: 26px;
+}
+
+.payment-method-btn.is-selected[data-method="CASH"] {
+    border-color: var(--color-cash);
+    color: var(--color-cash);
+    background: rgba(111, 162, 135, 0.1);
+}
+
+.payment-method-btn.is-selected[data-method="BANKK"] {
+    border-color: var(--color-bankk);
+    color: var(--color-bankk);
+    background: rgba(79, 166, 216, 0.1);
+}
+
+/* حقل تفاصيل بنكك */
+.bankk-details {
+    display: none;
+}
+
+.bankk-details.is-visible {
+    display: block;
+}
+
+.photo-capture-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--tap-target-min);
+    border-radius: var(--radius-sm);
+    border: 1.5px dashed var(--color-border-strong);
+    color: var(--color-text-muted);
+    font-size: 14px;
+    font-weight: 600;
+    width: 100%;
+}
+
+.photo-capture-btn.has-photo {
+    border-style: solid;
+    border-color: var(--color-success);
+    color: var(--color-success);
+}
+
+.photo-preview {
+    width: 100%;
+    max-height: 160px;
+    object-fit: contain;
+    border-radius: var(--radius-sm);
+    margin-top: var(--space-3);
+    display: none;
+}
+
+.photo-preview.is-visible {
+    display: block;
+}
+
+/* شبكة الأرقام لفتح/إغلاق الوردية */
+.amount-display {
+    text-align: center;
+    padding: var(--space-5) 0;
+}
+
+.amount-display__value {
+    font-family: var(--font-mono);
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--color-accent);
+}
+
+.amount-display__label {
+    font-size: 13px;
+    color: var(--color-text-muted);
+    margin-top: var(--space-1);
+}
+
+/* ملخص إغلاق الوردية */
+.close-summary-row {
+    display: flex;
+    justify-content: space-between;
+    padding: var(--space-2) 0;
+    font-size: 14px;
+    color: var(--color-text-muted);
+}
+
+.close-summary-row__value {
+    font-family: var(--font-mono);
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+.close-summary-row--diff.is-negative .close-summary-row__value {
+    color: var(--color-danger);
+}
+
+.close-summary-row--diff.is-positive .close-summary-row__value {
+    color: var(--color-success);
+}
+
+/* ----------------------------------------------------------------------------
+   إيصال الطباعة (Print) — يظهر فقط عند الطباعة، مخفي في الاستخدام العادي
+   ---------------------------------------------------------------------------- */
+.print-receipt {
+    display: none;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .print-receipt, .print-receipt * {
+        visibility: visible;
+    }
+    .print-receipt {
+        display: block;
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 80mm;
+        padding: 4mm;
+        font-family: var(--font-mono);
+        color: #000;
+        background: #fff;
+    }
+    .print-receipt__center {
+        text-align: center;
+    }
+    .print-receipt hr {
+        border: none;
+        border-top: 1px dashed #000;
+        margin: 3mm 0;
+    }
+    .print-receipt table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+    }
+    .print-receipt td {
+        padding: 1mm 0;
+    }
+}
+
+/* ----------------------------------------------------------------------------
+   استجابة للشاشات الأكبر (اختياري بسيط — التصميم أساسًا Mobile-First)
+   ---------------------------------------------------------------------------- */
+@media (min-width: 640px) {
+    .container {
+        max-width: 420px;
+    }
+}
