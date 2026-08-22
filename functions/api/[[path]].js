@@ -799,6 +799,111 @@ async function handleFileGet(request, env, ctx, fileKey) {
 }
 
 // ============================================================================
+// Shifts Report API (RESTAURANT_ADMIN)
+// ============================================================================
+
+// GET /api/shifts?status=OPEN|CLOSED&limit=50
+async function handleShiftsList(request, env, ctx) {
+    const url = new URL(request.url);
+    const statusFilter = url.searchParams.get("status"); // اختياري: OPEN أو CLOSED
+    const limit = Math.min(parseInt(url.searchParams.get("limit"), 10) || 50, 200);
+
+    let query = `
+        SELECT
+            s.id, s.opened_at, s.closed_at, s.opening_balance,
+            s.expected_cash, s.actual_cash, s.total_bankk, s.status,
+            u.username as cashier_username
+        FROM shifts s
+        JOIN users u ON u.id = s.cashier_id
+        WHERE s.restaurant_id = ?
+    `;
+    const bindings = [ctx.restaurantId];
+
+    if (statusFilter === "OPEN" || statusFilter === "CLOSED") {
+        query += ` AND s.status = ?`;
+        bindings.push(statusFilter);
+    }
+
+    query += ` ORDER BY s.opened_at DESC LIMIT ?`;
+    bindings.push(limit);
+
+    const { results } = await env.DB.prepare(query).bind(...bindings).all();
+
+    const shifts = results.map((s) => ({
+        id: s.id,
+        cashier_username: s.cashier_username,
+        opened_at: s.opened_at,
+        closed_at: s.closed_at,
+        opening_balance: s.opening_balance,
+        expected_cash: s.expected_cash,
+        actual_cash: s.actual_cash,
+        difference: s.status === "CLOSED" ? (s.actual_cash - s.expected_cash) : null,
+        total_bankk: s.total_bankk,
+        status: s.status,
+    }));
+
+    return jsonResponse({ shifts });
+}
+
+// ============================================================================
+// Orders List API (RESTAURANT_ADMIN) — لتدقيق بنكك ومراجعة الطلبات
+// ============================================================================
+
+// GET /api/orders?payment_method=BANKK&date=YYYY-MM-DD&limit=50
+async function handleOrdersList(request, env, ctx) {
+    const url = new URL(request.url);
+    const paymentMethodFilter = url.searchParams.get("payment_method"); // CASH | BANKK
+    const dateFilter = url.searchParams.get("date"); // YYYY-MM-DD
+    const limit = Math.min(parseInt(url.searchParams.get("limit"), 10) || 50, 200);
+
+    let query = `
+        SELECT
+            o.id, o.public_id, o.order_type, o.table_number, o.payment_method,
+            o.total_amount, o.cash_amount, o.bankk_amount, o.receipt_key,
+            o.bankk_ref, o.status, o.created_at,
+            u.username as cashier_username
+        FROM orders o
+        JOIN shifts s ON s.id = o.shift_id
+        JOIN users u ON u.id = s.cashier_id
+        WHERE o.restaurant_id = ?
+    `;
+    const bindings = [ctx.restaurantId];
+
+    if (paymentMethodFilter === "CASH" || paymentMethodFilter === "BANKK") {
+        query += ` AND o.payment_method = ?`;
+        bindings.push(paymentMethodFilter);
+    }
+    if (dateFilter && /^\d{4}-\d{2}-\d{2}$/.test(dateFilter)) {
+        query += ` AND substr(o.created_at, 1, 10) = ?`;
+        bindings.push(dateFilter);
+    }
+
+    query += ` ORDER BY o.created_at DESC LIMIT ?`;
+    bindings.push(limit);
+
+    const { results } = await env.DB.prepare(query).bind(...bindings).all();
+
+    return jsonResponse({ orders: results });
+}
+
+// GET /api/orders/:id/items — عناصر طلب محدد (لعرض التفاصيل عند الحاجة)
+async function handleOrderItemsList(request, env, ctx, orderId) {
+    // تحقق أولًا أن الطلب يخص نفس مطعم المستخدم — منع IDOR
+    const order = await env.DB.prepare(
+        `SELECT id FROM orders WHERE id = ? AND restaurant_id = ?`
+    ).bind(orderId, ctx.restaurantId).first();
+
+    if (!order) return errorResponse("الطلب غير موجود", 404);
+
+    const { results } = await env.DB.prepare(
+        `SELECT item_name, unit_price, quantity, subtotal, notes
+         FROM order_items WHERE order_id = ?`
+    ).bind(orderId).all();
+
+    return jsonResponse({ items: results });
+}
+
+// ============================================================================
 // Dashboard API
 // ============================================================================
 
@@ -905,6 +1010,23 @@ export async function onRequest(context) {
         if (path === "/api/dashboard/today" && method === "GET") {
             if (!requireRole(ctx, ["RESTAURANT_ADMIN"])) return errorResponse("غير مصرح", 403);
             return await handleDashboardToday(request, env, ctx);
+        }
+
+        // ---------------- Shifts Report ----------------
+        if (path === "/api/shifts" && method === "GET") {
+            if (!requireRole(ctx, ["RESTAURANT_ADMIN"])) return errorResponse("غير مصرح", 403);
+            return await handleShiftsList(request, env, ctx);
+        }
+
+        // ---------------- Orders List / Items (تدقيق بنكك) ----------------
+        if (path === "/api/orders" && method === "GET") {
+            if (!requireRole(ctx, ["RESTAURANT_ADMIN"])) return errorResponse("غير مصرح", 403);
+            return await handleOrdersList(request, env, ctx);
+        }
+        const orderItemsMatch = path.match(/^\/api\/orders\/(\d+)\/items$/);
+        if (orderItemsMatch && method === "GET") {
+            if (!requireRole(ctx, ["RESTAURANT_ADMIN"])) return errorResponse("غير مصرح", 403);
+            return await handleOrderItemsList(request, env, ctx, parseInt(orderItemsMatch[1], 10));
         }
 
         return errorResponse("المسار غير موجود", 404, "NOT_FOUND");
