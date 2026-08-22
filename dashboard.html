@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#12241F">
+    <title>كاشير — لوحة المطعم</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="app-shell">
+
+        <!-- ==================== شريط علوي ==================== -->
+        <header class="shift-bar">
+            <div class="shift-bar__info">
+                <span class="shift-bar__name" id="header-username">لوحة المطعم</span>
+            </div>
+            <button type="button" class="shift-bar__action shift-bar__action--close" id="logout-btn">
+                خروج
+            </button>
+        </header>
+
+        <!-- ==================== تبويبات اللوحة ==================== -->
+        <nav class="category-scroll" id="dash-tabs" aria-label="أقسام اللوحة">
+            <button type="button" class="category-chip is-active" data-tab="overview">نظرة عامة</button>
+            <button type="button" class="category-chip" data-tab="menu">المنيو</button>
+            <button type="button" class="category-chip" data-tab="shifts">الورديات</button>
+            <button type="button" class="category-chip" data-tab="bankk">تدقيق بنكك</button>
+        </nav>
+
+        <main class="cashier-main" style="padding-bottom: var(--space-6);">
+            <div class="container" style="max-width:100%; padding: 0 var(--space-4);">
+
+                <!-- ==================== قسم: نظرة عامة ==================== -->
+                <section id="tab-overview" class="dash-section">
+                    <div class="stats-grid" id="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-card__label">مبيعات اليوم</span>
+                            <span class="stat-card__value mono" id="stat-total-sales">—</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-card__label">عدد الطلبات</span>
+                            <span class="stat-card__value mono" id="stat-order-count">—</span>
+                        </div>
+                        <div class="stat-card stat-card--cash">
+                            <span class="stat-card__label">كاش</span>
+                            <span class="stat-card__value mono" id="stat-cash">—</span>
+                        </div>
+                        <div class="stat-card stat-card--bankk">
+                            <span class="stat-card__label">بنكك</span>
+                            <span class="stat-card__value mono" id="stat-bankk">—</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== قسم: المنيو ==================== -->
+                <section id="tab-menu" class="dash-section" style="display:none;">
+                    <button type="button" class="btn btn--primary" id="add-menu-item-btn" style="margin-bottom: var(--space-4);">
+                        + إضافة صنف جديد
+                    </button>
+                    <div id="menu-admin-list"></div>
+                </section>
+
+                <!-- ==================== قسم: الورديات ==================== -->
+                <section id="tab-shifts" class="dash-section" style="display:none;">
+                    <div id="shifts-list"></div>
+                </section>
+
+                <!-- ==================== قسم: تدقيق بنكك ==================== -->
+                <section id="tab-bankk" class="dash-section" style="display:none;">
+                    <div id="bankk-list"></div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== ورقة إضافة/تعديل صنف ==================== -->
+    <div class="sheet-overlay" id="menu-item-sheet-overlay">
+        <div class="sheet">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <h2 class="sheet__title" id="menu-item-sheet-title">إضافة صنف</h2>
+
+            <div id="menu-item-alert-box" class="alert" role="alert"></div>
+
+            <input type="hidden" id="menu-item-id-input">
+
+            <div class="field">
+                <label class="field__label" for="menu-item-category-input">التصنيف</label>
+                <input class="field__input" type="text" id="menu-item-category-input" placeholder="مثال: مشويات" list="category-suggestions">
+                <datalist id="category-suggestions"></datalist>
+            </div>
+            <div class="field">
+                <label class="field__label" for="menu-item-name-input">اسم الصنف</label>
+                <input class="field__input" type="text" id="menu-item-name-input" placeholder="مثال: كباب لحم">
+            </div>
+            <div class="field">
+                <label class="field__label" for="menu-item-price-input">السعر (جنيه)</label>
+                <input class="field__input mono" type="number" id="menu-item-price-input" inputmode="numeric" min="0" placeholder="0">
+            </div>
+
+            <button type="button" class="btn btn--primary btn--lg" id="save-menu-item-btn">
+                <span class="spinner" aria-hidden="true"></span>
+                <span class="btn__label">حفظ</span>
+            </button>
+            <button type="button" class="btn btn--ghost" id="close-menu-item-sheet-btn" style="margin-top: var(--space-3);">
+                إلغاء
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== ورقة عرض صورة إشعار بنكك ==================== -->
+    <div class="sheet-overlay" id="receipt-photo-sheet-overlay">
+        <div class="sheet" style="text-align:center;">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <h2 class="sheet__title">صورة إشعار بنكك</h2>
+            <img class="photo-preview is-visible" id="receipt-photo-img" style="max-height:60vh;" alt="صورة إشعار بنكك">
+            <button type="button" class="btn btn--ghost" id="close-receipt-photo-btn" style="margin-top: var(--space-4);">
+                إغلاق
+            </button>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+    <script src="/dashboard.js"></script>
+</body>
+</html>
