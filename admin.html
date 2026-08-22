@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#12241F">
+    <title>كاشير — لوحة المنصة</title>
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="app-shell">
+
+        <!-- ==================== شريط علوي ==================== -->
+        <header class="shift-bar">
+            <div class="shift-bar__info">
+                <span class="shift-bar__name" id="header-username">مدير المنصة</span>
+            </div>
+            <button type="button" class="shift-bar__action shift-bar__action--close" id="logout-btn">
+                خروج
+            </button>
+        </header>
+
+        <main class="cashier-main" style="padding-bottom: var(--space-6);">
+            <div class="container" style="max-width:100%; padding: 0 var(--space-4);">
+
+                <!-- ==================== إحصائيات عامة ==================== -->
+                <section style="padding-top: var(--space-4);">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <span class="stat-card__label">إجمالي المطاعم</span>
+                            <span class="stat-card__value mono" id="stat-total">—</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-card__label">مطاعم نشطة</span>
+                            <span class="stat-card__value mono" id="stat-active" style="color:var(--color-success);">—</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-card__label">مطاعم معطّلة</span>
+                            <span class="stat-card__value mono" id="stat-disabled" style="color:var(--color-danger);">—</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ==================== قائمة المطاعم ==================== -->
+                <section style="padding-top: var(--space-5);">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom: var(--space-4);">
+                        <h2 style="font-size:16px;">المطاعم</h2>
+                        <button type="button" class="btn btn--primary" id="add-restaurant-btn" style="width:auto; min-height:40px; padding: 0 var(--space-4); font-size:13px;">
+                            + مطعم جديد
+                        </button>
+                    </div>
+                    <div id="restaurants-list"></div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- ==================== ورقة إنشاء مطعم جديد ==================== -->
+    <div class="sheet-overlay" id="create-restaurant-sheet-overlay">
+        <div class="sheet">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <h2 class="sheet__title">مطعم جديد</h2>
+
+            <div id="create-restaurant-alert-box" class="alert" role="alert"></div>
+
+            <div class="field">
+                <label class="field__label" for="new-restaurant-name">اسم المطعم</label>
+                <input class="field__input" type="text" id="new-restaurant-name" placeholder="مثال: مطعم الوادي">
+            </div>
+            <div class="field">
+                <label class="field__label" for="new-restaurant-slug">المعرّف (slug) — للدخول</label>
+                <input class="field__input" type="text" id="new-restaurant-slug" placeholder="مثال: مطعم-الوادي" autocapitalize="off" spellcheck="false">
+            </div>
+            <div class="field">
+                <label class="field__label" for="new-restaurant-phone">رقم الهاتف (اختياري)</label>
+                <input class="field__input" type="tel" id="new-restaurant-phone" placeholder="09xxxxxxxx">
+            </div>
+            <div class="field">
+                <label class="field__label" for="new-restaurant-plan">خطة الاشتراك</label>
+                <select class="field__input" id="new-restaurant-plan">
+                    <option value="FREE">مجانية (FREE)</option>
+                    <option value="BASIC">أساسية (BASIC)</option>
+                    <option value="PRO">احترافية (PRO)</option>
+                    <option value="ENTERPRISE">مؤسسات (ENTERPRISE)</option>
+                </select>
+            </div>
+
+            <hr class="dot-divider">
+            <p style="font-size:13px; color:var(--color-text-muted); margin-bottom: var(--space-3);">
+                حساب مدير المطعم الأول
+            </p>
+
+            <div class="field">
+                <label class="field__label" for="new-admin-username">اسم مستخدم المدير</label>
+                <input class="field__input" type="text" id="new-admin-username" autocapitalize="off" spellcheck="false">
+            </div>
+            <div class="field">
+                <label class="field__label" for="new-admin-password">كلمة المرور (8 أحرف على الأقل)</label>
+                <input class="field__input" type="password" id="new-admin-password" autocomplete="new-password">
+            </div>
+
+            <button type="button" class="btn btn--primary btn--lg" id="save-restaurant-btn">
+                <span class="spinner" aria-hidden="true"></span>
+                <span class="btn__label">إنشاء المطعم</span>
+            </button>
+            <button type="button" class="btn btn--ghost" id="close-create-restaurant-btn" style="margin-top: var(--space-3);">
+                إلغاء
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== ورقة تفاصيل/تعديل مطعم ==================== -->
+    <div class="sheet-overlay" id="restaurant-detail-sheet-overlay">
+        <div class="sheet">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <h2 class="sheet__title" id="restaurant-detail-title">تفاصيل المطعم</h2>
+
+            <div id="restaurant-detail-alert-box" class="alert" role="alert"></div>
+
+            <input type="hidden" id="detail-restaurant-id">
+
+            <div class="field">
+                <label class="field__label" for="detail-restaurant-name">اسم المطعم</label>
+                <input class="field__input" type="text" id="detail-restaurant-name">
+            </div>
+            <div class="field">
+                <label class="field__label" for="detail-restaurant-phone">رقم الهاتف</label>
+                <input class="field__input" type="tel" id="detail-restaurant-phone">
+            </div>
+            <div class="field">
+                <label class="field__label" for="detail-restaurant-plan">خطة الاشتراك</label>
+                <select class="field__input" id="detail-restaurant-plan">
+                    <option value="FREE">مجانية (FREE)</option>
+                    <option value="BASIC">أساسية (BASIC)</option>
+                    <option value="PRO">احترافية (PRO)</option>
+                    <option value="ENTERPRISE">مؤسسات (ENTERPRISE)</option>
+                </select>
+            </div>
+
+            <button type="button" class="btn btn--primary" id="save-restaurant-detail-btn" style="margin-bottom: var(--space-3);">
+                <span class="spinner" aria-hidden="true"></span>
+                <span class="btn__label">حفظ التعديلات</span>
+            </button>
+            <button type="button" class="btn btn--danger" id="toggle-restaurant-btn" style="margin-bottom: var(--space-3);">
+                تعطيل/تفعيل المطعم
+            </button>
+
+            <hr class="dot-divider">
+            <p style="font-size:13px; color:var(--color-text-muted); margin-bottom: var(--space-3);">
+                المستخدمون
+            </p>
+            <div id="restaurant-users-list"></div>
+
+            <button type="button" class="btn btn--ghost" id="add-user-btn" style="margin-top: var(--space-3);">
+                + إضافة مستخدم
+            </button>
+            <button type="button" class="btn btn--ghost" id="close-restaurant-detail-btn" style="margin-top: var(--space-3);">
+                إغلاق
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== ورقة إضافة مستخدم لمطعم ==================== -->
+    <div class="sheet-overlay" id="add-user-sheet-overlay">
+        <div class="sheet">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <h2 class="sheet__title">إضافة مستخدم</h2>
+
+            <div id="add-user-alert-box" class="alert" role="alert"></div>
+
+            <div class="field">
+                <label class="field__label" for="add-user-username">اسم المستخدم</label>
+                <input class="field__input" type="text" id="add-user-username" autocapitalize="off" spellcheck="false">
+            </div>
+            <div class="field">
+                <label class="field__label" for="add-user-password">كلمة المرور (8 أحرف على الأقل)</label>
+                <input class="field__input" type="password" id="add-user-password" autocomplete="new-password">
+            </div>
+            <div class="field">
+                <label class="field__label" for="add-user-role">الدور</label>
+                <select class="field__input" id="add-user-role">
+                    <option value="CASHIER">كاشير</option>
+                    <option value="RESTAURANT_ADMIN">مدير مطعم</option>
+                </select>
+            </div>
+
+            <button type="button" class="btn btn--primary btn--lg" id="save-new-user-btn">
+                <span class="spinner" aria-hidden="true"></span>
+                <span class="btn__label">إضافة</span>
+            </button>
+            <button type="button" class="btn btn--ghost" id="close-add-user-btn" style="margin-top: var(--space-3);">
+                إلغاء
+            </button>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+    <script src="/admin.js"></script>
+</body>
+</html>
