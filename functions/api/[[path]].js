@@ -173,13 +173,6 @@ export async function onRequest(context) {
         return errorResponse("المسار غير موجود", 404, "NOT_FOUND");
     } catch (err) {
         console.error("unhandled_api_error", err);
-        // ملاحظة تشخيصية مؤقتة: نُظهر تفاصيل الخطأ الفعلية في الاستجابة نفسها
-        // لتسهيل التشخيص من الهاتف بدون الحاجة لأدوات CLI أو سجلات خارجية.
-        // يجب إزالة هذا التفصيل (debug) قبل الإطلاق النهائي للإنتاج.
-        return new Response(JSON.stringify({
-            error: "حدث خطأ في الخادم",
-            code: "INTERNAL_ERROR",
-            debug: { message: err && err.message, stack: err && err.stack },
-        }), { status: 500, headers: { "Content-Type": "application/json; charset=utf-8" } });
+        return errorResponse("حدث خطأ في الخادم", 500, "INTERNAL_ERROR");
     }
 }
