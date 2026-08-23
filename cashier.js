@@ -28,6 +28,12 @@
         shiftBadge: document.getElementById("shift-status-badge"),
         shiftStatusText: document.getElementById("shift-status-text"),
         shiftToggleBtn: document.getElementById("shift-toggle-btn"),
+        shiftLiveSummary: document.getElementById("shift-live-summary"),
+        shiftLiveOrders: document.getElementById("shift-live-orders"),
+        shiftLiveCash: document.getElementById("shift-live-cash"),
+        previewOrderCount: document.getElementById("preview-order-count"),
+        previewBankk: document.getElementById("preview-bankk"),
+        previewExpectedCash: document.getElementById("preview-expected-cash"),
 
         categoryScroll: document.getElementById("category-scroll"),
         menuGrid: document.getElementById("menu-grid"),
@@ -126,6 +132,16 @@
         el.shiftToggleBtn.textContent = isOpen ? "إغلاق الوردية" : "فتح الوردية";
         el.shiftToggleBtn.classList.toggle("shift-bar__action--open", !isOpen);
         el.shiftToggleBtn.classList.toggle("shift-bar__action--close", isOpen);
+
+        // ملخص حي: عدد الطلبات والمتوقع بالصندوق حتى الآن — يبقى ظاهرًا طوال
+        // الوردية حتى لا يفاجأ الكاشير بالأرقام فقط عند لحظة الإغلاق.
+        if (isOpen) {
+            el.shiftLiveSummary.style.display = "flex";
+            el.shiftLiveOrders.textContent = `${currentShift.order_count ?? 0} طلب`;
+            el.shiftLiveCash.textContent = `نقدًا: ${formatSDG(currentShift.expected_cash_now ?? currentShift.opening_balance)}`;
+        } else {
+            el.shiftLiveSummary.style.display = "none";
+        }
 
         // لا يمكن البيع بدون وردية مفتوحة
         el.menuEmptyState.style.display = isOpen ? "none" : "block";
@@ -414,6 +430,7 @@
         clearCart();
         closeSheet(el.paymentSheetOverlay);
         showOrderSuccess(lastCompletedOrder);
+        refreshShiftStatus(); // تحديث عدد الطلبات والمتوقع بالصندوق في الشريط فورًا
     }
 
     function generateClientToken() {
@@ -469,6 +486,14 @@
 
         el.openingBalanceInput.value = "";
         el.actualCashInput.value = "";
+
+        // تعبئة صندوق المعاينة بأرقام حية قبل أن يُدخل الكاشير المبلغ الفعلي —
+        // حتى لا يُغلق الوردية "بشكل أعمى" بدون معرفة المتوقع مسبقًا.
+        if (isOpen && currentShift) {
+            el.previewOrderCount.textContent = currentShift.order_count ?? 0;
+            el.previewBankk.textContent = formatSDG(currentShift.bankk_so_far ?? 0);
+            el.previewExpectedCash.textContent = formatSDG(currentShift.expected_cash_now ?? currentShift.opening_balance);
+        }
 
         openSheet(el.shiftSheetOverlay);
     }
