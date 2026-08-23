@@ -14,7 +14,32 @@ export async function handleShiftCurrent(request, env, ctx) {
          ORDER BY opened_at DESC LIMIT 1`
     ).bind(ctx.restaurantId, ctx.userId).first();
 
-    return jsonResponse({ shift: shift || null });
+    if (!shift) return jsonResponse({ shift: null });
+
+    // حسابات حية لمبيعات الوردية حتى هذه اللحظة (بدون انتظار الإغلاق) —
+    // تتيح للكاشير رؤية "المتوقع بالصندوق" في أي وقت، لا فقط عند الإغلاق.
+    const liveSums = await env.DB.prepare(
+        `SELECT
+            COUNT(*) as order_count,
+            COALESCE(SUM(cash_amount), 0)  as cash_so_far,
+            COALESCE(SUM(bankk_amount), 0) as bankk_so_far
+         FROM orders
+         WHERE restaurant_id = ? AND shift_id = ? AND status = 'COMPLETED'`
+    ).bind(ctx.restaurantId, shift.id).first();
+
+    const orderCount = liveSums?.order_count ?? 0;
+    const cashSoFar = liveSums?.cash_so_far ?? 0;
+    const bankkSoFar = liveSums?.bankk_so_far ?? 0;
+
+    return jsonResponse({
+        shift: {
+            ...shift,
+            order_count: orderCount,
+            cash_so_far: cashSoFar,
+            bankk_so_far: bankkSoFar,
+            expected_cash_now: shift.opening_balance + cashSoFar, // المتوقع بالصندوق الآن لو أُغلقت الوردية هذه اللحظة
+        },
+    });
 }
 
 // POST /api/shift/open
