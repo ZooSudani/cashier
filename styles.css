@@ -430,6 +430,27 @@ a {
    شاشة الكاشير (cashier.html)
    ---------------------------------------------------------------------------- */
 
+.shift-bar__live-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin-top: 3px;
+}
+
+.shift-bar__live-summary .mono {
+    color: var(--color-accent);
+    font-weight: 600;
+}
+
+.close-preview-box {
+    background: var(--color-bg);
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-4);
+}
+
 /* شريط علوي ثابت: اسم المطعم + حالة الوردية + زر فتح/إغلاق */
 .shift-bar {
     position: sticky;
