@@ -262,10 +262,7 @@
                 setButtonLoading(setupSubmit, false);
 
                 if (!result.ok) {
-                    let message = (result.data && result.data.error) || "تعذّر إنشاء الحساب";
-                    if (result.data && result.data.debug && result.data.debug.message) {
-                        message += " | " + result.data.debug.message;
-                    }
+                    const message = (result.data && result.data.error) || "تعذّر إنشاء الحساب";
                     showAlert(setupAlertBox, message);
                     return;
                 }
