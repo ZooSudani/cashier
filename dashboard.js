@@ -19,6 +19,7 @@
         statOrderCount: document.getElementById("stat-order-count"),
         statCash: document.getElementById("stat-cash"),
         statBankk: document.getElementById("stat-bankk"),
+        overviewDateInput: document.getElementById("overview-date-input"),
 
         addMenuItemBtn: document.getElementById("add-menu-item-btn"),
         menuAdminList: document.getElementById("menu-admin-list"),
@@ -48,6 +49,9 @@
     async function init() {
         const displayUsername = safeSessionGet("cashier_display_username");
         if (displayUsername) el.headerUsername.textContent = displayUsername;
+
+        // تهيئة فلتر التاريخ على اليوم الحالي بتوقيت الجهاز (تقريب كافٍ للعرض)
+        el.overviewDateInput.value = new Date().toISOString().slice(0, 10);
 
         bindEvents();
         await loadOverview();
@@ -87,7 +91,9 @@
     // نظرة عامة (Dashboard Stats)
     // ------------------------------------------------------------------
     async function loadOverview() {
-        const result = await apiRequest("/dashboard/today");
+        const selectedDate = el.overviewDateInput.value; // YYYY-MM-DD
+        const query = selectedDate ? `?date=${encodeURIComponent(selectedDate)}` : "";
+        const result = await apiRequest(`/dashboard/today${query}`);
 
         if (result.status === 401) { window.location.href = "/"; return; }
         if (result.status === 403) { window.location.href = "/"; return; }
@@ -154,11 +160,13 @@
                     <div class="admin-row__actions">
                         <button type="button" class="admin-row__icon-btn" data-action="edit" title="تعديل">✏️</button>
                         <button type="button" class="admin-row__icon-btn" data-action="toggle" title="تبديل التوفر">🔁</button>
+                        <button type="button" class="admin-row__icon-btn" data-action="delete" title="حذف" style="color:var(--color-danger);">🗑️</button>
                     </div>
                 `;
 
                 row.querySelector('[data-action="edit"]').addEventListener("click", () => openMenuItemSheet(item));
                 row.querySelector('[data-action="toggle"]').addEventListener("click", () => toggleMenuItem(item.id));
+                row.querySelector('[data-action="delete"]').addEventListener("click", () => deleteMenuItem(item.id, item.name));
 
                 el.menuAdminList.appendChild(row);
             });
@@ -218,6 +226,16 @@
 
     async function toggleMenuItem(itemId) {
         const result = await apiRequest(`/menu/${itemId}/toggle`, { method: "PATCH" });
+        if (!result.ok) return;
+        await loadMenuAdmin();
+    }
+
+    async function deleteMenuItem(itemId, itemName) {
+        // تأكيد أساسي عبر confirm() قبل حذف نهائي — لا يوجد استرجاع بعد الحذف
+        const confirmed = window.confirm(`حذف "${itemName}" نهائيًا من المنيو؟`);
+        if (!confirmed) return;
+
+        const result = await apiRequest(`/menu/${itemId}`, { method: "DELETE" });
         if (!result.ok) return;
         await loadMenuAdmin();
     }
@@ -283,10 +301,10 @@
     }
 
     // ------------------------------------------------------------------
-    // تدقيق بنكك
+    // تدقيق بنكك — مُجمَّعة حسب كل وردية على حدة
     // ------------------------------------------------------------------
     async function loadBankkAudit() {
-        const result = await apiRequest("/orders?payment_method=BANKK&limit=100");
+        const result = await apiRequest("/orders?payment_method=BANKK&limit=200");
         if (!result.ok) return;
 
         const orders = result.data.orders || [];
@@ -297,27 +315,59 @@
             return;
         }
 
+        // تجميع العمليات حسب shift_id — كل وردية تظهر كمجموعة منفصلة بعنوانها
+        // الخاص (اسم الكاشير + وقت فتح الوردية) بدل قائمة واحدة مسطّحة للجميع.
+        const byShift = {};
         orders.forEach((order) => {
-            const row = document.createElement("div");
-            row.className = "admin-row";
-            row.innerHTML = `
-                <div class="admin-row__main">
-                    <div class="admin-row__title">طلب #${escapeHtml(order.public_id)}</div>
-                    <div class="admin-row__subtitle">
-                        ${escapeHtml(order.cashier_username)} — ${formatKhartoumTime(order.created_at)}
-                        ${order.bankk_ref ? ` — رقم العملية: ${escapeHtml(order.bankk_ref)}` : ""}
+            const key = order.shift_id;
+            if (!byShift[key]) byShift[key] = [];
+            byShift[key].push(order);
+        });
+
+        Object.values(byShift).forEach((shiftOrders) => {
+            const first = shiftOrders[0];
+            const shiftTotal = shiftOrders.reduce((sum, o) => sum + o.total_amount, 0);
+
+            const header = document.createElement("div");
+            header.style.cssText = "display:flex; justify-content:space-between; align-items:center; margin: var(--space-5) 0 var(--space-2);";
+            header.innerHTML = `
+                <div>
+                    <div style="font-weight:700; font-size:14px;">
+                        ${escapeHtml(first.cashier_username)}
+                        <span class="pill ${first.shift_status === "OPEN" ? "pill--available" : "pill--unavailable"}" style="margin-right:6px;">
+                            ${first.shift_status === "OPEN" ? "مفتوحة" : "مغلقة"}
+                        </span>
+                    </div>
+                    <div style="font-size:12px; color:var(--color-text-muted); margin-top:2px;">
+                        وردية ${formatKhartoumTime(first.shift_opened_at)}
                     </div>
                 </div>
-                <div class="admin-row__meta">${formatSDG(order.total_amount)}</div>
-                ${order.receipt_key ? `<button type="button" class="admin-row__icon-btn" data-key="${escapeHtml(order.receipt_key)}" title="عرض الصورة">🖼️</button>` : ""}
+                <div class="mono" style="color:var(--color-bankk); font-weight:700;">${formatSDG(shiftTotal)}</div>
             `;
+            el.bankkList.appendChild(header);
 
-            const photoBtn = row.querySelector("[data-key]");
-            if (photoBtn) {
-                photoBtn.addEventListener("click", () => showReceiptPhoto(order.receipt_key));
-            }
+            shiftOrders.forEach((order) => {
+                const row = document.createElement("div");
+                row.className = "admin-row";
+                row.innerHTML = `
+                    <div class="admin-row__main">
+                        <div class="admin-row__title">طلب #${escapeHtml(order.public_id)}</div>
+                        <div class="admin-row__subtitle">
+                            ${formatKhartoumTime(order.created_at)}
+                            ${order.bankk_ref ? ` — رقم العملية: ${escapeHtml(order.bankk_ref)}` : ""}
+                        </div>
+                    </div>
+                    <div class="admin-row__meta">${formatSDG(order.total_amount)}</div>
+                    ${order.receipt_key ? `<button type="button" class="admin-row__icon-btn" data-key="${escapeHtml(order.receipt_key)}" title="عرض الصورة">🖼️</button>` : ""}
+                `;
 
-            el.bankkList.appendChild(row);
+                const photoBtn = row.querySelector("[data-key]");
+                if (photoBtn) {
+                    photoBtn.addEventListener("click", () => showReceiptPhoto(order.receipt_key));
+                }
+
+                el.bankkList.appendChild(row);
+            });
         });
     }
 
@@ -346,6 +396,8 @@
         el.dashTabs.querySelectorAll(".category-chip").forEach((chip) => {
             chip.addEventListener("click", () => switchTab(chip.dataset.tab));
         });
+
+        el.overviewDateInput.addEventListener("change", loadOverview);
 
         el.logoutBtn.addEventListener("click", handleLogout);
 
