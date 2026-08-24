@@ -316,17 +316,26 @@
         }
 
         // تجميع العمليات حسب shift_id — كل وردية تظهر كمجموعة منفصلة بعنوانها
-        // الخاص (اسم الكاشير + وقت فتح الوردية) بدل قائمة واحدة مسطّحة للجميع.
-        const byShift = {};
+        // الخاص. نستخدم Map بدل Object لأن مفاتيح الأرقام في Object تُرتَّب
+        // تصاعديًا تلقائيًا في JavaScript (تتجاهل ترتيب الإدخال)، ما كان يُظهر
+        // الورديات الأقدم أولًا رغم وصول البيانات مرتّبة من الأحدث للأقدم.
+        const byShift = new Map();
         orders.forEach((order) => {
             const key = order.shift_id;
-            if (!byShift[key]) byShift[key] = [];
-            byShift[key].push(order);
+            if (!byShift.has(key)) byShift.set(key, []);
+            byShift.get(key).push(order);
         });
 
-        Object.values(byShift).forEach((shiftOrders) => {
+        // ترتيب صريح إضافي حسب وقت فتح الوردية تنازليًا (الأحدث أولًا) —
+        // ضمان مستقل عن ترتيب الطلبات نفسها.
+        const shiftGroups = Array.from(byShift.values()).sort(
+            (a, b) => new Date(b[0].shift_opened_at) - new Date(a[0].shift_opened_at)
+        );
+
+        shiftGroups.forEach((shiftOrders) => {
             const first = shiftOrders[0];
             const shiftTotal = shiftOrders.reduce((sum, o) => sum + o.total_amount, 0);
+            const isOpen = first.shift_status === "OPEN";
 
             const header = document.createElement("div");
             header.style.cssText = "display:flex; justify-content:space-between; align-items:center; margin: var(--space-5) 0 var(--space-2);";
@@ -334,12 +343,13 @@
                 <div>
                     <div style="font-weight:700; font-size:14px;">
                         ${escapeHtml(first.cashier_username)}
-                        <span class="pill ${first.shift_status === "OPEN" ? "pill--available" : "pill--unavailable"}" style="margin-right:6px;">
-                            ${first.shift_status === "OPEN" ? "مفتوحة" : "مغلقة"}
+                        <span class="pill ${isOpen ? "pill--available" : "pill--unavailable"}" style="margin-right:6px;">
+                            ${isOpen ? "مفتوحة" : "مغلقة"}
                         </span>
                     </div>
                     <div style="font-size:12px; color:var(--color-text-muted); margin-top:2px;">
-                        وردية ${formatKhartoumTime(first.shift_opened_at)}
+                        فتح: ${formatKhartoumTime(first.shift_opened_at)}
+                        ${first.shift_closed_at ? ` — إغلاق: ${formatKhartoumTime(first.shift_closed_at)}` : ""}
                     </div>
                 </div>
                 <div class="mono" style="color:var(--color-bankk); font-weight:700;">${formatSDG(shiftTotal)}</div>
