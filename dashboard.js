@@ -41,6 +41,12 @@
         receiptPhotoSheetOverlay: document.getElementById("receipt-photo-sheet-overlay"),
         receiptPhotoImg: document.getElementById("receipt-photo-img"),
         closeReceiptPhotoBtn: document.getElementById("close-receipt-photo-btn"),
+
+        confirmDialogOverlay: document.getElementById("confirm-dialog-overlay"),
+        confirmDialogTitle: document.getElementById("confirm-dialog-title"),
+        confirmDialogMessage: document.getElementById("confirm-dialog-message"),
+        confirmDialogConfirmBtn: document.getElementById("confirm-dialog-confirm-btn"),
+        confirmDialogCancelBtn: document.getElementById("confirm-dialog-cancel-btn"),
     };
 
     // ------------------------------------------------------------------
@@ -63,6 +69,31 @@
 
     function openSheet(overlayEl) { overlayEl.classList.add("is-visible"); }
     function closeSheet(overlayEl) { overlayEl.classList.remove("is-visible"); }
+
+    /**
+     * نافذة تأكيد تفاعلية مصمَّمة بنفس هوية النظام (بدل confirm() الافتراضي
+     * الرمادي في المتصفح). تُرجع Promise<boolean> — true عند التأكيد.
+     * الاستخدام: const ok = await showConfirmDialog("حذف X نهائيًا؟");
+     */
+    function showConfirmDialog(message, title = "تأكيد الحذف") {
+        el.confirmDialogTitle.textContent = title;
+        el.confirmDialogMessage.textContent = message;
+        openSheet(el.confirmDialogOverlay);
+
+        return new Promise((resolve) => {
+            function cleanup(result) {
+                closeSheet(el.confirmDialogOverlay);
+                el.confirmDialogConfirmBtn.removeEventListener("click", onConfirm);
+                el.confirmDialogCancelBtn.removeEventListener("click", onCancel);
+                resolve(result);
+            }
+            function onConfirm() { cleanup(true); }
+            function onCancel() { cleanup(false); }
+
+            el.confirmDialogConfirmBtn.addEventListener("click", onConfirm);
+            el.confirmDialogCancelBtn.addEventListener("click", onCancel);
+        });
+    }
 
     function escapeHtml(str) {
         const div = document.createElement("div");
@@ -231,8 +262,7 @@
     }
 
     async function deleteMenuItem(itemId, itemName) {
-        // تأكيد أساسي عبر confirm() قبل حذف نهائي — لا يوجد استرجاع بعد الحذف
-        const confirmed = window.confirm(`حذف "${itemName}" نهائيًا من المنيو؟`);
+        const confirmed = await showConfirmDialog(`سيُحذف "${itemName}" نهائيًا من المنيو ولن يمكن التراجع عن هذا الإجراء.`);
         if (!confirmed) return;
 
         const result = await apiRequest(`/menu/${itemId}`, { method: "DELETE" });
