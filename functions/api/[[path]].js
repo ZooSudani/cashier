@@ -29,7 +29,7 @@ import { errorResponse } from "./_lib/utils.js";
 import { getAuthContext, requireAuth, requireRole, requireRestaurantContext } from "./_lib/auth.js";
 
 import { handleAuthSetup, handleAuthLogin, handleAuthLogout } from "./_lib/handlers.auth.js";
-import { handleMenuList, handleMenuCreate, handleMenuUpdate, handleMenuToggle } from "./_lib/handlers.menu.js";
+import { handleMenuList, handleMenuCreate, handleMenuUpdate, handleMenuToggle, handleMenuDelete } from "./_lib/handlers.menu.js";
 import { handleShiftCurrent, handleShiftOpen, handleShiftClose, handleShiftsList } from "./_lib/handlers.shift.js";
 import { handleOrderCreate, handleOrdersList, handleOrderItemsList } from "./_lib/handlers.orders.js";
 import { handleUpload, handleFileGet } from "./_lib/handlers.upload.js";
@@ -76,6 +76,10 @@ export async function onRequest(context) {
         if (menuToggleMatch && method === "PATCH") {
             if (!requireRole(ctx, ["RESTAURANT_ADMIN"])) return errorResponse("غير مصرح", 403);
             return await handleMenuToggle(request, env, ctx, parseInt(menuToggleMatch[1], 10));
+        }
+        if (menuUpdateMatch && method === "DELETE") {
+            if (!requireRole(ctx, ["RESTAURANT_ADMIN"])) return errorResponse("غير مصرح", 403);
+            return await handleMenuDelete(request, env, ctx, parseInt(menuUpdateMatch[1], 10));
         }
 
         // ---------------- Shift ----------------
