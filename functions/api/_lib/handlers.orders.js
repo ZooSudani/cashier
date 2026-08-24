@@ -180,7 +180,7 @@ export async function handleOrdersList(request, env, ctx) {
             o.id, o.public_id, o.order_type, o.table_number, o.payment_method,
             o.total_amount, o.cash_amount, o.bankk_amount, o.receipt_key,
             o.bankk_ref, o.status, o.created_at,
-            o.shift_id, s.opened_at as shift_opened_at, s.status as shift_status,
+            o.shift_id, s.opened_at as shift_opened_at, s.closed_at as shift_closed_at, s.status as shift_status,
             u.username as cashier_username
         FROM orders o
         JOIN shifts s ON s.id = o.shift_id
