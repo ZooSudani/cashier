@@ -451,6 +451,24 @@ a {
     padding: var(--space-4);
 }
 
+/* نافذة تأكيد عامة (بدل confirm() الافتراضي للمتصفح) — تُستخدم لأي إجراء
+   تدميري (حذف صنف، إلخ) بنفس هوية النظام بدل التنبيه الرمادي الافتراضي */
+.confirm-dialog {
+    max-width: 380px;
+}
+
+.confirm-dialog__icon {
+    font-size: 40px;
+    margin: var(--space-2) 0 var(--space-3);
+}
+
+.confirm-dialog__message {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-5);
+    line-height: 1.6;
+}
+
 /* شريط علوي ثابت: اسم المطعم + حالة الوردية + زر فتح/إغلاق */
 .shift-bar {
     position: sticky;
