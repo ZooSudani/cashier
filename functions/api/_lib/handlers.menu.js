@@ -96,3 +96,26 @@ export async function handleMenuToggle(request, env, ctx, itemId) {
 
     return jsonResponse({ success: true, is_available: !!newAvailability });
 }
+
+// DELETE /api/menu/:id — حذف صنف نهائيًا
+// آمن: order_items تحتفظ بنسخة تاريخية من الاسم/السعر (item_name, unit_price)
+// بشكل مستقل، وحقل item_id يتحول تلقائيًا إلى NULL (ON DELETE SET NULL) —
+// فلا تتأثر الفواتير التاريخية أبدًا بحذف صنف من المنيو.
+export async function handleMenuDelete(request, env, ctx, itemId) {
+    const existing = await env.DB.prepare(
+        `SELECT id, name FROM menu_items WHERE id = ? AND restaurant_id = ?`
+    ).bind(itemId, ctx.restaurantId).first();
+
+    if (!existing) return errorResponse("الصنف غير موجود", 404);
+
+    await env.DB.prepare(
+        `DELETE FROM menu_items WHERE id = ? AND restaurant_id = ?`
+    ).bind(itemId, ctx.restaurantId).run();
+
+    await writeAuditLog(env, {
+        restaurantId: ctx.restaurantId, userId: ctx.userId, action: "MENU_DISABLED",
+        entityType: "menu_item", entityId: itemId, details: { deleted: true, name: existing.name },
+    });
+
+    return jsonResponse({ success: true });
+}
