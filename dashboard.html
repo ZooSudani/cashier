@@ -129,6 +129,23 @@
         </div>
     </div>
 
+    <!-- ==================== نافذة تأكيد عامة (بدل confirm() الافتراضي للمتصفح) ==================== -->
+    <div class="sheet-overlay" id="confirm-dialog-overlay">
+        <div class="sheet confirm-dialog" style="text-align:center;">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <div class="confirm-dialog__icon" id="confirm-dialog-icon" aria-hidden="true">🗑️</div>
+            <h2 class="sheet__title" id="confirm-dialog-title" style="text-align:center;">تأكيد الحذف</h2>
+            <p class="confirm-dialog__message" id="confirm-dialog-message"></p>
+
+            <button type="button" class="btn btn--danger btn--lg" id="confirm-dialog-confirm-btn">
+                تأكيد
+            </button>
+            <button type="button" class="btn btn--ghost" id="confirm-dialog-cancel-btn" style="margin-top: var(--space-3);">
+                إلغاء
+            </button>
+        </div>
+    </div>
+
     <script src="/app.js"></script>
     <script src="/dashboard.js"></script>
 </body>
