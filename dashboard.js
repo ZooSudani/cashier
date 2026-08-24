@@ -189,9 +189,18 @@
                         </div>
                     </div>
                     <div class="admin-row__actions">
-                        <button type="button" class="admin-row__icon-btn" data-action="edit" title="تعديل">✏️</button>
-                        <button type="button" class="admin-row__icon-btn" data-action="toggle" title="تبديل التوفر">🔁</button>
-                        <button type="button" class="admin-row__icon-btn" data-action="delete" title="حذف" style="color:var(--color-danger);">🗑️</button>
+                        <div class="icon-btn-labeled">
+                            <button type="button" class="admin-row__icon-btn" data-action="edit" title="تعديل">✏️</button>
+                            <span class="icon-btn-labeled__text">تعديل</span>
+                        </div>
+                        <div class="icon-btn-labeled">
+                            <button type="button" class="admin-row__icon-btn" data-action="toggle" title="تبديل التوفر">🔁</button>
+                            <span class="icon-btn-labeled__text">حالة الصنف</span>
+                        </div>
+                        <div class="icon-btn-labeled">
+                            <button type="button" class="admin-row__icon-btn" data-action="delete" title="حذف" style="color:var(--color-danger);">🗑️</button>
+                            <span class="icon-btn-labeled__text" style="color:var(--color-danger);">حذف</span>
+                        </div>
                     </div>
                 `;
 
