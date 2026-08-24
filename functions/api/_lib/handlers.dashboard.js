@@ -5,11 +5,18 @@
 
 import { jsonResponse } from "./utils.js";
 
-// GET /api/dashboard/today
+// GET /api/dashboard/today?date=YYYY-MM-DD — إحصائيات يوم محدد (افتراضيًا اليوم الحالي)
 export async function handleDashboardToday(request, env, ctx) {
-    // نطاق اليوم بتوقيت Africa/Khartoum (UTC+2)
+    const url = new URL(request.url);
+    const requestedDate = url.searchParams.get("date");
+
+    // نطاق اليوم بتوقيت Africa/Khartoum (UTC+2) كافتراضي إن لم يُحدَّد تاريخ
     const now = new Date(Date.now() + 2 * 60 * 60 * 1000);
     const todayStr = now.toISOString().slice(0, 10); // YYYY-MM-DD
+
+    const targetDate = (requestedDate && /^\d{4}-\d{2}-\d{2}$/.test(requestedDate))
+        ? requestedDate
+        : todayStr;
 
     const stats = await env.DB.prepare(
         `SELECT
@@ -21,10 +28,10 @@ export async function handleDashboardToday(request, env, ctx) {
          WHERE restaurant_id = ?
            AND status = 'COMPLETED'
            AND substr(created_at, 1, 10) = ?`
-    ).bind(ctx.restaurantId, todayStr).first();
+    ).bind(ctx.restaurantId, targetDate).first();
 
     return jsonResponse({
-        date: todayStr,
+        date: targetDate,
         order_count: stats?.order_count ?? 0,
         total_sales: stats?.total_sales ?? 0,
         total_cash: stats?.total_cash ?? 0,
