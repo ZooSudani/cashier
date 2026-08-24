@@ -1110,6 +1110,21 @@ a {
     font-size: 15px;
 }
 
+/* زر أيقونة مع تسمية نصية توضيحية أسفله (تعديل/حالة الصنف/حذف) */
+.icon-btn-labeled {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+}
+
+.icon-btn-labeled__text {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+}
+
 /* شارة صغيرة (متوفر/نفد، كاش/بنكك، مفتوحة/مغلقة) */
 .pill {
     display: inline-flex;
