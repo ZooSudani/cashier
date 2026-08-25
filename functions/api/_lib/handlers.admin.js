@@ -199,3 +199,32 @@ export async function handleAdminUserToggle(request, env, ctx, userId) {
 
     return jsonResponse({ success: true, is_active: !!newActive });
 }
+
+// POST /api/admin/users/:id/reset-password — إعادة تعيين كلمة مرور أي مستخدم
+// (مدير مطعم أو كاشير في أي مطعم) — SUPER_ADMIN فقط.
+export async function handleAdminUserResetPassword(request, env, ctx, userId) {
+    let body;
+    try { body = await request.json(); } catch { return errorResponse("بيانات غير صالحة", 400); }
+
+    const { new_password } = body || {};
+    if (!new_password || new_password.length < 8) {
+        return errorResponse("كلمة المرور يجب ألا تقل عن 8 أحرف", 400);
+    }
+
+    const existing = await env.DB.prepare(
+        `SELECT id, restaurant_id, role FROM users WHERE id = ?`
+    ).bind(userId).first();
+
+    if (!existing) return errorResponse("المستخدم غير موجود", 404);
+    if (existing.role === "SUPER_ADMIN") return errorResponse("لا يمكن تغيير كلمة مرور مدير المنصة من هنا", 403);
+
+    const passwordHash = await hashPassword(new_password);
+    await env.DB.prepare(`UPDATE users SET password_hash = ? WHERE id = ?`).bind(passwordHash, userId).run();
+
+    await writeAuditLog(env, {
+        restaurantId: existing.restaurant_id, userId: ctx.userId, action: "USER_UPDATED",
+        entityType: "user", entityId: userId, details: { password_reset: true },
+    });
+
+    return jsonResponse({ success: true });
+}
