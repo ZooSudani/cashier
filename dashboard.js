@@ -37,6 +37,14 @@
 
         shiftsList: document.getElementById("shifts-list"),
         bankkList: document.getElementById("bankk-list"),
+        staffList: document.getElementById("staff-list"),
+
+        staffResetPasswordSheetOverlay: document.getElementById("staff-reset-password-sheet-overlay"),
+        staffResetPasswordTitle: document.getElementById("staff-reset-password-title"),
+        staffResetPasswordAlertBox: document.getElementById("staff-reset-password-alert-box"),
+        staffResetPasswordInput: document.getElementById("staff-reset-password-input"),
+        staffSaveResetPasswordBtn: document.getElementById("staff-save-reset-password-btn"),
+        staffCloseResetPasswordBtn: document.getElementById("staff-close-reset-password-btn"),
 
         receiptPhotoSheetOverlay: document.getElementById("receipt-photo-sheet-overlay"),
         receiptPhotoImg: document.getElementById("receipt-photo-img"),
@@ -116,6 +124,7 @@
         if (tabName === "menu") loadMenuAdmin();
         if (tabName === "shifts") loadShifts();
         if (tabName === "bankk") loadBankkAudit();
+        if (tabName === "staff") loadStaff();
     }
 
     // ------------------------------------------------------------------
@@ -427,6 +436,74 @@
     }
 
     // ------------------------------------------------------------------
+    // الموظفون (الكاشيرية) — إعادة تعيين كلمة المرور
+    // ------------------------------------------------------------------
+    let staffResetPasswordTargetId = null;
+
+    async function loadStaff() {
+        const result = await apiRequest("/staff");
+        if (!result.ok) return;
+
+        const staff = result.data.staff || [];
+        el.staffList.innerHTML = "";
+
+        if (staff.length === 0) {
+            el.staffList.innerHTML = `<div class="empty-state">لا يوجد كاشيرية بعد</div>`;
+            return;
+        }
+
+        staff.forEach((s) => {
+            const row = document.createElement("div");
+            row.className = "admin-row";
+            row.innerHTML = `
+                <div class="admin-row__main">
+                    <div class="admin-row__title">${escapeHtml(s.username)}</div>
+                    <div class="admin-row__subtitle">
+                        <span class="pill ${s.is_active ? "pill--available" : "pill--unavailable"}">
+                            ${s.is_active ? "نشط" : "معطّل"}
+                        </span>
+                    </div>
+                </div>
+                <button type="button" class="admin-row__icon-btn" data-action="reset-pw" title="إعادة تعيين كلمة المرور">🔑</button>
+            `;
+            row.querySelector('[data-action="reset-pw"]').addEventListener("click", () => openStaffResetPasswordSheet(s.id, s.username));
+            el.staffList.appendChild(row);
+        });
+    }
+
+    function openStaffResetPasswordSheet(userId, username) {
+        staffResetPasswordTargetId = userId;
+        hideAlert(el.staffResetPasswordAlertBox);
+        el.staffResetPasswordTitle.textContent = `كلمة مرور جديدة لـ ${username}`;
+        el.staffResetPasswordInput.value = "";
+        openSheet(el.staffResetPasswordSheetOverlay);
+    }
+
+    async function saveStaffResetPassword() {
+        hideAlert(el.staffResetPasswordAlertBox);
+        const newPassword = el.staffResetPasswordInput.value;
+
+        if (!newPassword || newPassword.length < 8) {
+            showAlert(el.staffResetPasswordAlertBox, "كلمة المرور يجب ألا تقل عن 8 أحرف");
+            return;
+        }
+
+        setButtonLoading(el.staffSaveResetPasswordBtn, true);
+        const result = await apiRequest(`/staff/${staffResetPasswordTargetId}/reset-password`, {
+            method: "POST",
+            body: { new_password: newPassword },
+        });
+        setButtonLoading(el.staffSaveResetPasswordBtn, false);
+
+        if (!result.ok) {
+            showAlert(el.staffResetPasswordAlertBox, (result.data && result.data.error) || "فشل تغيير كلمة المرور");
+            return;
+        }
+
+        closeSheet(el.staffResetPasswordSheetOverlay);
+    }
+
+    // ------------------------------------------------------------------
     // تسجيل الخروج
     // ------------------------------------------------------------------
     async function handleLogout() {
@@ -455,6 +532,9 @@
         el.closeMenuItemSheetBtn.addEventListener("click", () => closeSheet(el.menuItemSheetOverlay));
 
         el.closeReceiptPhotoBtn.addEventListener("click", () => closeSheet(el.receiptPhotoSheetOverlay));
+
+        el.staffSaveResetPasswordBtn.addEventListener("click", saveStaffResetPassword);
+        el.staffCloseResetPasswordBtn.addEventListener("click", () => closeSheet(el.staffResetPasswordSheetOverlay));
     }
 
     document.addEventListener("DOMContentLoaded", init);
