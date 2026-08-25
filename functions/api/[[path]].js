@@ -38,7 +38,9 @@ import {
     handleAdminOverview, handleAdminRestaurantsList, handleAdminRestaurantCreate,
     handleAdminRestaurantUpdate, handleAdminRestaurantToggle,
     handleAdminRestaurantUsersList, handleAdminRestaurantUserCreate, handleAdminUserToggle,
+    handleAdminUserResetPassword,
 } from "./_lib/handlers.admin.js";
+import { handleStaffList, handleStaffResetPassword } from "./_lib/handlers.staff.js";
 
 export async function onRequest(context) {
     const { request, env } = context;
@@ -149,6 +151,22 @@ export async function onRequest(context) {
         if (adminUserToggleMatch && method === "PATCH") {
             if (!requireRole(ctx, ["SUPER_ADMIN"])) return errorResponse("غير مصرح", 403);
             return await handleAdminUserToggle(request, env, ctx, parseInt(adminUserToggleMatch[1], 10));
+        }
+        const adminUserResetPwMatch = path.match(/^\/api\/admin\/users\/(\d+)\/reset-password$/);
+        if (adminUserResetPwMatch && method === "POST") {
+            if (!requireRole(ctx, ["SUPER_ADMIN"])) return errorResponse("غير مصرح", 403);
+            return await handleAdminUserResetPassword(request, env, ctx, parseInt(adminUserResetPwMatch[1], 10));
+        }
+
+        // ---------------- Staff (كاشيرية المطعم — RESTAURANT_ADMIN) ----------------
+        if (path === "/api/staff" && method === "GET") {
+            if (!requireRole(ctx, ["RESTAURANT_ADMIN"])) return errorResponse("غير مصرح", 403);
+            return await handleStaffList(request, env, ctx);
+        }
+        const staffResetPwMatch = path.match(/^\/api\/staff\/(\d+)\/reset-password$/);
+        if (staffResetPwMatch && method === "POST") {
+            if (!requireRole(ctx, ["RESTAURANT_ADMIN"])) return errorResponse("غير مصرح", 403);
+            return await handleStaffResetPassword(request, env, ctx, parseInt(staffResetPwMatch[1], 10));
         }
 
         // ---------------- Dashboard ----------------
