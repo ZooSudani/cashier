@@ -199,6 +199,29 @@
         </div>
     </div>
 
+    <!-- ==================== ورقة إعادة تعيين كلمة مرور مستخدم ==================== -->
+    <div class="sheet-overlay" id="reset-password-sheet-overlay">
+        <div class="sheet">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <h2 class="sheet__title" id="reset-password-title">إعادة تعيين كلمة المرور</h2>
+
+            <div id="reset-password-alert-box" class="alert" role="alert"></div>
+
+            <div class="field">
+                <label class="field__label" for="reset-password-input">كلمة مرور جديدة (8 أحرف على الأقل)</label>
+                <input class="field__input" type="password" id="reset-password-input" autocomplete="new-password">
+            </div>
+
+            <button type="button" class="btn btn--primary btn--lg" id="save-reset-password-btn">
+                <span class="spinner" aria-hidden="true"></span>
+                <span class="btn__label">حفظ كلمة المرور</span>
+            </button>
+            <button type="button" class="btn btn--ghost" id="close-reset-password-btn" style="margin-top: var(--space-3);">
+                إلغاء
+            </button>
+        </div>
+    </div>
+
     <script src="/app.js"></script>
     <script src="/admin.js"></script>
 </body>
