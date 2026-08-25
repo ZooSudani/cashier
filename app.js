@@ -120,3 +120,16 @@ function setButtonLoading(buttonEl, isLoading) {
     buttonEl.classList.toggle("is-loading", isLoading);
     buttonEl.disabled = isLoading;
 }
+
+// ----------------------------------------------------------------------------
+// تسجيل Service Worker (PWA) — يعمل على كل الصفحات التي تستدعي app.js
+// فحص توفر الميزة أولًا (بعض المتصفحات القديمة لا تدعم Service Workers)،
+// ولا يمنع أي خطأ هنا عمل باقي الصفحة إطلاقًا (best-effort تمامًا).
+// ----------------------------------------------------------------------------
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/service-worker.js").catch((err) => {
+            console.warn("تعذّر تسجيل service worker:", err);
+        });
+    });
+}
