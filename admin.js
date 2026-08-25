@@ -52,6 +52,13 @@
         addUserRole: document.getElementById("add-user-role"),
         saveNewUserBtn: document.getElementById("save-new-user-btn"),
         closeAddUserBtn: document.getElementById("close-add-user-btn"),
+
+        resetPasswordSheetOverlay: document.getElementById("reset-password-sheet-overlay"),
+        resetPasswordTitle: document.getElementById("reset-password-title"),
+        resetPasswordAlertBox: document.getElementById("reset-password-alert-box"),
+        resetPasswordInput: document.getElementById("reset-password-input"),
+        saveResetPasswordBtn: document.getElementById("save-reset-password-btn"),
+        closeResetPasswordBtn: document.getElementById("close-reset-password-btn"),
     };
 
     // ------------------------------------------------------------------
@@ -283,9 +290,13 @@
                         </span>
                     </div>
                 </div>
-                <button type="button" class="admin-row__icon-btn" data-user-id="${u.id}" title="تفعيل/تعطيل">🔁</button>
+                <div class="admin-row__actions">
+                    <button type="button" class="admin-row__icon-btn" data-action="reset-pw" title="إعادة تعيين كلمة المرور">🔑</button>
+                    <button type="button" class="admin-row__icon-btn" data-action="toggle" title="تفعيل/تعطيل">🔁</button>
+                </div>
             `;
-            row.querySelector("[data-user-id]").addEventListener("click", () => toggleUser(u.id, restaurantId));
+            row.querySelector('[data-action="toggle"]').addEventListener("click", () => toggleUser(u.id, restaurantId));
+            row.querySelector('[data-action="reset-pw"]').addEventListener("click", () => openResetPasswordSheet(u.id, u.username));
             el.restaurantUsersList.appendChild(row);
         });
     }
@@ -294,6 +305,43 @@
         const result = await apiRequest(`/admin/users/${userId}/toggle`, { method: "PATCH" });
         if (!result.ok) return;
         await loadRestaurantUsers(restaurantId);
+    }
+
+    // ------------------------------------------------------------------
+    // إعادة تعيين كلمة مرور مستخدم (مدير مطعم أو كاشير) — Super Admin فقط
+    // ------------------------------------------------------------------
+    let resetPasswordTargetUserId = null;
+
+    function openResetPasswordSheet(userId, username) {
+        resetPasswordTargetUserId = userId;
+        hideAlert(el.resetPasswordAlertBox);
+        el.resetPasswordTitle.textContent = `كلمة مرور جديدة لـ ${username}`;
+        el.resetPasswordInput.value = "";
+        openSheet(el.resetPasswordSheetOverlay);
+    }
+
+    async function saveResetPassword() {
+        hideAlert(el.resetPasswordAlertBox);
+        const newPassword = el.resetPasswordInput.value;
+
+        if (!newPassword || newPassword.length < 8) {
+            showAlert(el.resetPasswordAlertBox, "كلمة المرور يجب ألا تقل عن 8 أحرف");
+            return;
+        }
+
+        setButtonLoading(el.saveResetPasswordBtn, true);
+        const result = await apiRequest(`/admin/users/${resetPasswordTargetUserId}/reset-password`, {
+            method: "POST",
+            body: { new_password: newPassword },
+        });
+        setButtonLoading(el.saveResetPasswordBtn, false);
+
+        if (!result.ok) {
+            showAlert(el.resetPasswordAlertBox, (result.data && result.data.error) || "فشل تغيير كلمة المرور");
+            return;
+        }
+
+        closeSheet(el.resetPasswordSheetOverlay);
     }
 
     function openAddUserSheet() {
@@ -367,6 +415,9 @@
         el.addUserBtn.addEventListener("click", openAddUserSheet);
         el.saveNewUserBtn.addEventListener("click", saveNewUser);
         el.closeAddUserBtn.addEventListener("click", () => closeSheet(el.addUserSheetOverlay));
+
+        el.saveResetPasswordBtn.addEventListener("click", saveResetPassword);
+        el.closeResetPasswordBtn.addEventListener("click", () => closeSheet(el.resetPasswordSheetOverlay));
     }
 
     document.addEventListener("DOMContentLoaded", init);
