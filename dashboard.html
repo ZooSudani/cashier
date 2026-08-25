@@ -30,6 +30,7 @@
             <button type="button" class="category-chip" data-tab="menu">المنيو</button>
             <button type="button" class="category-chip" data-tab="shifts">الورديات</button>
             <button type="button" class="category-chip" data-tab="bankk">تدقيق بنكك</button>
+            <button type="button" class="category-chip" data-tab="staff">الموظفون</button>
         </nav>
 
         <main class="cashier-main" style="padding-bottom: var(--space-6);">
@@ -77,6 +78,11 @@
                 <!-- ==================== قسم: تدقيق بنكك ==================== -->
                 <section id="tab-bankk" class="dash-section" style="display:none;">
                     <div id="bankk-list"></div>
+                </section>
+
+                <!-- ==================== قسم: الموظفون (الكاشيرية) ==================== -->
+                <section id="tab-staff" class="dash-section" style="display:none;">
+                    <div id="staff-list"></div>
                 </section>
 
             </div>
@@ -141,6 +147,29 @@
                 تأكيد
             </button>
             <button type="button" class="btn btn--ghost" id="confirm-dialog-cancel-btn" style="margin-top: var(--space-3);">
+                إلغاء
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== ورقة إعادة تعيين كلمة مرور كاشير ==================== -->
+    <div class="sheet-overlay" id="staff-reset-password-sheet-overlay">
+        <div class="sheet">
+            <div class="sheet__handle" aria-hidden="true"></div>
+            <h2 class="sheet__title" id="staff-reset-password-title">إعادة تعيين كلمة المرور</h2>
+
+            <div id="staff-reset-password-alert-box" class="alert" role="alert"></div>
+
+            <div class="field">
+                <label class="field__label" for="staff-reset-password-input">كلمة مرور جديدة (8 أحرف على الأقل)</label>
+                <input class="field__input" type="password" id="staff-reset-password-input" autocomplete="new-password">
+            </div>
+
+            <button type="button" class="btn btn--primary btn--lg" id="staff-save-reset-password-btn">
+                <span class="spinner" aria-hidden="true"></span>
+                <span class="btn__label">حفظ كلمة المرور</span>
+            </button>
+            <button type="button" class="btn btn--ghost" id="staff-close-reset-password-btn" style="margin-top: var(--space-3);">
                 إلغاء
             </button>
         </div>
