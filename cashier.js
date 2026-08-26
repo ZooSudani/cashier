@@ -28,6 +28,7 @@
         shiftBadge: document.getElementById("shift-status-badge"),
         shiftStatusText: document.getElementById("shift-status-text"),
         shiftToggleBtn: document.getElementById("shift-toggle-btn"),
+        logoutBtn: document.getElementById("logout-btn"),
         shiftLiveSummary: document.getElementById("shift-live-summary"),
         shiftLiveOrders: document.getElementById("shift-live-orders"),
         shiftLiveCash: document.getElementById("shift-live-cash"),
@@ -544,10 +545,23 @@
     }
 
     // ------------------------------------------------------------------
+    // تسجيل الخروج
+    // ------------------------------------------------------------------
+    async function handleLogout() {
+        await apiRequest("/auth/logout", { method: "POST" });
+        try {
+            sessionStorage.removeItem("cashier_display_username");
+            sessionStorage.removeItem("cashier_display_role");
+        } catch (e) { /* تجاهل */ }
+        window.location.href = "/";
+    }
+
+    // ------------------------------------------------------------------
     // ربط الأحداث
     // ------------------------------------------------------------------
     function bindEvents() {
         el.shiftToggleBtn.addEventListener("click", openShiftSheet);
+        el.logoutBtn.addEventListener("click", handleLogout);
         el.closeShiftSheetBtn.addEventListener("click", () => closeSheet(el.shiftSheetOverlay));
         el.confirmOpenShiftBtn.addEventListener("click", handleOpenShift);
         el.confirmCloseShiftBtn.addEventListener("click", handleCloseShift);
