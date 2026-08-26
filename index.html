@@ -30,8 +30,11 @@
 
                     <div class="card__body login-card__printhead">
 
-                        <!-- تبويب: دخول مطعم / دخول مدير المنصة -->
-                        <div class="tabs" role="tablist" aria-label="نوع الدخول">
+                        <!-- تبويب: دخول مطعم / دخول مدير المنصة — مخفي افتراضيًا،
+                             يظهر فقط عند فتح الرابط مع ?admin (وصول خاص لمدير
+                             المنصة، غير معروض في واجهة التطبيق العادية المخصصة
+                             لأصحاب المطاعم والكاشيرية) -->
+                        <div class="tabs" role="tablist" aria-label="نوع الدخول" id="login-mode-tabs" style="display:none;">
                             <button type="button" class="tabs__btn is-active" id="tab-restaurant" role="tab" aria-selected="true">
                                 دخول مطعم
                             </button>
@@ -94,7 +97,7 @@
                     </div>
                 </div>
 
-                <p class="login-footer-link">
+                <p class="login-footer-link" id="admin-setup-link" style="display:none;">
                     أول مرة تشغّل النظام؟
                     <button type="button" id="open-setup">إعداد حساب مدير المنصة</button>
                 </p>
@@ -145,6 +148,7 @@
         (function () {
             const tabRestaurant   = document.getElementById("tab-restaurant");
             const tabSuperAdmin   = document.getElementById("tab-super-admin");
+            const loginModeTabs   = document.getElementById("login-mode-tabs");
             const fieldSlug       = document.getElementById("field-restaurant-slug");
             const slugInput       = document.getElementById("restaurant-slug");
 
@@ -155,6 +159,7 @@
             const usernameInput   = document.getElementById("username");
             const passwordInput   = document.getElementById("password");
 
+            const adminSetupLink  = document.getElementById("admin-setup-link");
             const openSetupBtn    = document.getElementById("open-setup");
             const setupOverlay    = document.getElementById("setup-overlay");
             const setupForm       = document.getElementById("setup-form");
@@ -162,10 +167,23 @@
             const setupAlertBox   = document.getElementById("setup-alert-box");
             const setupCancelBtn  = document.getElementById("setup-cancel");
 
+            // وصول مدير المنصة مخفي تمامًا من الواجهة العادية للتطبيق (المخصصة
+            // لأصحاب المطاعم والكاشيرية فقط) — يظهر تبويبه ورابط الإعداد الأول
+            // فقط عند فتح الرابط صراحة مع ?admin (مثال: /?admin)، وليس أبدًا
+            // من الاستخدام العادي للتطبيق المثبَّت على الشاشة الرئيسية.
+            const isAdminAccess = new URLSearchParams(window.location.search).has("admin");
+            if (isAdminAccess) {
+                loginModeTabs.style.display = "flex";
+                adminSetupLink.style.display = "block";
+            }
+
             let mode = "restaurant"; // أو "super-admin"
 
             // ---------------- تبديل التبويبات ----------------
             function setMode(newMode) {
+                // لا يمكن التحول لوضع مدير المنصة إلا عبر وصول ?admin الخاص
+                if (newMode === "super-admin" && !isAdminAccess) return;
+
                 mode = newMode;
                 const isRestaurant = mode === "restaurant";
 
