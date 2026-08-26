@@ -10,12 +10,15 @@
 // ولم يُنفَّذ هنا بعد. حاليًا: بدون إنترنت، تُفتح الواجهة لكن API لا يستجيب.
 // ============================================================================
 
-const CACHE_VERSION = "cashier-v1";
+const CACHE_VERSION = "cashier-v2";
 const APP_SHELL_CACHE = `${CACHE_VERSION}-shell`;
 
-// الأصول الأساسية التي تُخزَّن فور تثبيت الـ Service Worker
+// الأصول الأساسية التي تُخزَّن فور تثبيت الـ Service Worker.
+// ملاحظة: "/" غير موجود عمدًا هنا — Cloudflare Pages يُعيد توجيهه داخليًا
+// إلى index.html، وتخزين استجابة مُعاد توجيهها (redirected response) يمنع
+// Safari تحديدًا من استخدامها لاحقًا لفتح صفحة (خطأ "has redirections").
+// نُخزّن index.html صراحة فقط، ونتعامل مع طلبات "/" بشكل خاص في fetch أدناه.
 const APP_SHELL_FILES = [
-    "/",
     "/index.html",
     "/cashier.html",
     "/dashboard.html",
@@ -36,8 +39,7 @@ const APP_SHELL_FILES = [
 self.addEventListener("install", (event) => {
     event.waitUntil(
         caches.open(APP_SHELL_CACHE).then((cache) => {
-            // addAll تفشل كاملة لو فشل ملف واحد — نستخدم إضافة فردية متسامحة
-            // حتى لا يمنع فشل ملف ثانوي واحد تثبيت البقية.
+            // إضافة فردية متسامحة — فشل ملف واحد لا يمنع تخزين البقية
             return Promise.all(
                 APP_SHELL_FILES.map((url) =>
                     cache.add(url).catch((err) => {
@@ -67,7 +69,20 @@ self.addEventListener("activate", (event) => {
 });
 
 // ----------------------------------------------------------------------------
-// الجلب (Fetch): استراتيجيتان مختلفتان حسب نوع الطلب
+// إعادة بناء الاستجابة من الصفر لإزالة أي "علامة إعادة توجيه" (redirected)
+// قد تكون عالقة بها — ضروري تحديدًا لطلبات التصفّح (navigate) على Safari.
+// ----------------------------------------------------------------------------
+async function cloneWithoutRedirectFlag(response) {
+    const body = await response.clone().blob();
+    return new Response(body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers,
+    });
+}
+
+// ----------------------------------------------------------------------------
+// الجلب (Fetch): استراتيجيات مختلفة حسب نوع الطلب
 // ----------------------------------------------------------------------------
 self.addEventListener("fetch", (event) => {
     const url = new URL(event.request.url);
@@ -76,8 +91,7 @@ self.addEventListener("fetch", (event) => {
     if (url.origin !== self.location.origin) return;
 
     // API: دائمًا Network-First — البيانات (منيو، طلبات، ورديات) يجب أن تكون
-    // حية دائمًا؛ لا معنى إطلاقًا لتخزينها مؤقتًا هنا. عند فشل الشبكة تمامًا،
-    // يُعاد خطأ JSON واضح بدل تعليق الطلب أو إرجاع صفحة HTML بالخطأ.
+    // حية دائمًا؛ لا معنى إطلاقًا لتخزينها مؤقتًا هنا.
     if (url.pathname.startsWith("/api/")) {
         event.respondWith(
             fetch(event.request).catch(() =>
@@ -90,8 +104,31 @@ self.addEventListener("fetch", (event) => {
         return;
     }
 
-    // أصول الواجهة الثابتة: Cache-First مع تحديث في الخلفية (Stale-While-Revalidate)
-    // — فتح فوري من التخزين المؤقت، مع تحديث النسخة المخزَّنة بصمت لزيارة لاحقة.
+    // طلبات التصفّح المباشر (فتح صفحة كاملة، مثل "/" أو "/cashier.html"):
+    // نُحوّل "/" صراحة إلى "/index.html" في التخزين المؤقت، ونعيد بناء
+    // الاستجابة دائمًا لإزالة أي علامة إعادة توجيه قبل إرجاعها.
+    if (event.request.mode === "navigate") {
+        const cacheKey = url.pathname === "/" ? "/index.html" : url.pathname;
+
+        event.respondWith(
+            fetch(event.request)
+                .then((networkResponse) => {
+                    if (networkResponse && networkResponse.ok) {
+                        const responseClone = networkResponse.clone();
+                        caches.open(APP_SHELL_CACHE).then((cache) => cache.put(cacheKey, responseClone));
+                    }
+                    return networkResponse;
+                })
+                .catch(async () => {
+                    const cached = await caches.match(cacheKey);
+                    if (cached) return cloneWithoutRedirectFlag(cached);
+                    return new Response("غير متصل بالإنترنت", { status: 503 });
+                })
+        );
+        return;
+    }
+
+    // أصول الواجهة الثابتة (CSS/JS/الصور): Cache-First مع تحديث في الخلفية
     event.respondWith(
         caches.match(event.request).then((cachedResponse) => {
             const networkFetch = fetch(event.request)
@@ -104,8 +141,8 @@ self.addEventListener("fetch", (event) => {
                 })
                 .catch(() => null);
 
-            // أعِد النسخة المخزَّنة فورًا إن وُجدت، وإلا انتظر الشبكة
-            return cachedResponse || networkFetch;
+            if (cachedResponse) return cloneWithoutRedirectFlag(cachedResponse);
+            return networkFetch;
         })
     );
 });
