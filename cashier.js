@@ -134,6 +134,10 @@
         el.shiftToggleBtn.classList.toggle("shift-bar__action--open", !isOpen);
         el.shiftToggleBtn.classList.toggle("shift-bar__action--close", isOpen);
 
+        // زر الخروج مخفي أثناء وجود وردية مفتوحة — يمنع خروج الكاشير سهوًا
+        // بدون إغلاق الوردية أولًا، ما قد يُربك حسابات الصندوق لاحقًا.
+        el.logoutBtn.style.display = isOpen ? "none" : "inline-flex";
+
         // ملخص حي: عدد الطلبات والمتوقع بالصندوق حتى الآن — يبقى ظاهرًا طوال
         // الوردية حتى لا يفاجأ الكاشير بالأرقام فقط عند لحظة الإغلاق.
         if (isOpen) {
