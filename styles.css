@@ -11,26 +11,26 @@
    ---------------------------------------------------------------------------- */
 :root {
     /* ألوان — مستوحاة من إيصال الطباعة الحرارية وليل النيل */
-    --color-bg:            #12241F;
-    --color-bg-elevated:   #17332B;
-    --color-bg-elevated-2: #1D3D33;
+    --color-bg:            #12241F;   /* تيل داكن قريب من الأسود، لا أسود خالص */
+    --color-bg-elevated:   #17332B;   /* سطح البطاقات */
+    --color-bg-elevated-2: #1D3D33;   /* سطح أعلى (hover/active) */
     --color-border:        rgba(243, 238, 223, 0.12);
     --color-border-strong: rgba(243, 238, 223, 0.24);
 
-    --color-text:          #F3EEDF;
+    --color-text:          #F3EEDF;   /* لون ورق الإيصال الدافئ */
     --color-text-muted:    #9FB6AC;
     --color-text-faint:    #6E8981;
 
-    --color-accent:        #E8A33D;
+    --color-accent:        #E8A33D;   /* كركمي/زعفراني — بهارات سودانية */
     --color-accent-strong: #F4B942;
-    --color-accent-text:   #1A1305;
+    --color-accent-text:   #1A1305;   /* نص فوق لون التمييز */
 
     --color-success:       #6FA287;
     --color-success-bg:    rgba(111, 162, 135, 0.14);
     --color-danger:        #E0644E;
     --color-danger-bg:     rgba(224, 100, 78, 0.14);
-    --color-cash:          #6FA287;
-    --color-bankk:         #4FA6D8;
+    --color-cash:          #6FA287;   /* لون ثابت لطريقة الدفع كاش */
+    --color-bankk:         #4FA6D8;   /* لون ثابت لطريقة الدفع بنكك */
 
     /* الطباعة */
     --font-display: 'Tajawal', 'Segoe UI', sans-serif;
@@ -192,7 +192,7 @@ a {
     border: 1.5px solid var(--color-border);
     border-radius: var(--radius-sm);
     color: var(--color-text);
-    font-size: 16px;
+    font-size: 16px; /* يمنع تكبير الصفحة تلقائيًا في iOS عند التركيز */
     transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -273,7 +273,7 @@ a {
     font-size: 18px;
 }
 
-/* تبويبات */
+/* تبويبات (مثال: تسجيل دخول مطعم / مدير المنصة) */
 .tabs {
     display: flex;
     background: var(--color-bg);
@@ -298,7 +298,7 @@ a {
     color: var(--color-accent-text);
 }
 
-/* رسائل الحالة */
+/* رسائل الحالة (خطأ/نجاح) */
 .alert {
     display: none;
     padding: var(--space-3) var(--space-4);
@@ -328,7 +328,7 @@ a {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* شارات الأرقام/المبالغ */
+/* شارات الأرقام/المبالغ (نمط الإيصال) */
 .mono {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
@@ -451,7 +451,8 @@ a {
     flex-shrink: 0;
 }
 
-/* شارة طلبات محفوظة محليًا بانتظار الإرسال */
+/* شارة طلبات محفوظة محليًا بانتظار الإرسال (Offline Orders Queue) —
+   عنصر عرض فقط غير قابل للضغط، المزامنة تلقائية بحتة عند عودة الاتصال */
 .offline-queue-badge {
     display: flex;
     align-items: center;
@@ -466,6 +467,10 @@ a {
     font-weight: 700;
     font-size: 13px;
     animation: offline-badge-pulse 2s ease-in-out infinite;
+    cursor: default;
+    pointer-events: none;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 @keyframes offline-badge-pulse {
@@ -480,7 +485,8 @@ a {
     padding: var(--space-4);
 }
 
-/* نافذة تأكيد عامة */
+/* نافذة تأكيد عامة (بدل confirm() الافتراضي للمتصفح) — تُستخدم لأي إجراء
+   تدميري (حذف صنف، إلخ) بنفس هوية النظام بدل التنبيه الرمادي الافتراضي */
 .confirm-dialog {
     max-width: 380px;
 }
@@ -497,7 +503,7 @@ a {
     line-height: 1.6;
 }
 
-/* شريط علوي ثابت */
+/* شريط علوي ثابت: اسم المطعم + حالة الوردية + زر فتح/إغلاق */
 .shift-bar {
     position: sticky;
     top: 0;
@@ -582,7 +588,7 @@ a {
     flex: 1;
     display: flex;
     flex-direction: column;
-    padding-bottom: 96px;
+    padding-bottom: 96px; /* مساحة لشريط السلة السفلي الثابت */
 }
 
 /* رقائق التصنيفات القابلة للتمرير أفقيًا */
@@ -751,7 +757,7 @@ a {
     font-size: 15px;
 }
 
-/* أوراق سفلية منزلقة */
+/* أوراق سفلية منزلقة (Bottom Sheets): السلة / الدفع / فتح-إغلاق الوردية */
 .sheet-overlay {
     position: fixed;
     inset: 0;
@@ -998,7 +1004,7 @@ a {
 }
 
 /* ----------------------------------------------------------------------------
-   إيصال الطباعة (Print)
+   إيصال الطباعة (Print) — يظهر فقط عند الطباعة، مخفي في الاستخدام العادي
    ---------------------------------------------------------------------------- */
 .print-receipt {
     display: none;
@@ -1008,11 +1014,9 @@ a {
     body * {
         visibility: hidden;
     }
-
     .print-receipt, .print-receipt * {
         visibility: visible;
     }
-
     .print-receipt {
         display: block;
         position: absolute;
@@ -1024,23 +1028,19 @@ a {
         color: #000;
         background: #fff;
     }
-
     .print-receipt__center {
         text-align: center;
     }
-
     .print-receipt hr {
         border: none;
         border-top: 1px dashed #000;
         margin: 3mm 0;
     }
-
     .print-receipt table {
         width: 100%;
         border-collapse: collapse;
         font-size: 11px;
     }
-
     .print-receipt td {
         padding: 1mm 0;
     }
@@ -1090,7 +1090,7 @@ a {
     color: var(--color-bankk);
 }
 
-/* صفوف قوائم الإدارة */
+/* صفوف قوائم الإدارة (منيو / ورديات / بنكك) — نمط بطاقة أفقية */
 .admin-row {
     display: flex;
     align-items: center;
@@ -1144,7 +1144,7 @@ a {
     font-size: 15px;
 }
 
-/* زر أيقونة مع تسمية نصية توضيحية */
+/* زر أيقونة مع تسمية نصية توضيحية أسفله (تعديل/حالة الصنف/حذف) */
 .icon-btn-labeled {
     display: flex;
     flex-direction: column;
@@ -1159,7 +1159,7 @@ a {
     white-space: nowrap;
 }
 
-/* شارة صغيرة */
+/* شارة صغيرة (متوفر/نفد، كاش/بنكك، مفتوحة/مغلقة) */
 .pill {
     display: inline-flex;
     align-items: center;
@@ -1218,7 +1218,7 @@ a {
 }
 
 /* ----------------------------------------------------------------------------
-   استجابة للشاشات الأكبر
+   استجابة للشاشات الأكبر (اختياري بسيط — التصميم أساسًا Mobile-First)
    ---------------------------------------------------------------------------- */
 @media (min-width: 640px) {
     .container {
