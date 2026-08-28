@@ -431,10 +431,20 @@
 
         setButtonLoading(el.confirmOrderBtn, false);
 
-        // فشل شبكة حقيقي (لا اتصال بالإنترنت إطلاقًا) — وليس رفضًا من الخادم
-        // (مثل بيانات ناقصة أو صنف غير متوفر). في هذه الحالة فقط نحفظ الطلب
-        // محليًا في IndexedDB بدل فقدانه، ونعامله كنجاح من منظور الكاشير.
-        if (!result.ok && result.status === 0) {
+        // فشل شبكة حقيقي (لا اتصال بالإنترنت) — نتحقق من حالتين:
+        // 1) status === 0: فشل fetch تمامًا قبل وصول أي استجابة (لا Service
+        //    Worker نشط بعد، أو خطأ شبكة مباشر لم يعترضه أحد).
+        // 2) code === "OFFLINE": الـ Service Worker (المرحلة 7) اعترض الطلب
+        //    فعليًا لأن لا اتصال، وأرجع استجابة JSON بديلة برمز 503 بدل ترك
+        //    fetch يفشل بالكامل — وهو السلوك الفعلي الشائع عند تفعيل PWA.
+        // كلا الحالتين يعنيان نفس الشيء: لا اتصال، فنحفظ الطلب محليًا بدل
+        // فقدانه، ونعامله كنجاح من منظور الكاشير.
+        const isOfflineFailure = !result.ok && (
+            result.status === 0 ||
+            (result.data && result.data.code === "OFFLINE")
+        );
+
+        if (isOfflineFailure) {
             try {
                 await queueOfflineOrder(payload, lastOrderIdempotencyKey);
             } catch (err) {
