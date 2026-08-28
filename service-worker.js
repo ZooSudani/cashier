@@ -10,7 +10,7 @@
 // ولم يُنفَّذ هنا بعد. حاليًا: بدون إنترنت، تُفتح الواجهة لكن API لا يستجيب.
 // ============================================================================
 
-const CACHE_VERSION = "cashier-v6";
+const CACHE_VERSION = "cashier-v7";
 const APP_SHELL_CACHE = `${CACHE_VERSION}-shell`;
 
 // الأصول الأساسية التي تُخزَّن فور تثبيت الـ Service Worker.
