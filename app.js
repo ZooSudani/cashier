@@ -226,12 +226,24 @@ async function syncQueuedOrders() {
                 body: item.payload,
                 headers: { "Idempotency-Key": item.idempotencyKey },
             });
-            // نجاح الإرسال أو رفض واضح من الخادم (مثل تكرار مؤكد) كلاهما يعني
-            // "انتهى أمر هذا الطلب" ويجب إزالته من الطابور. فقط فشل الشبكة
-            // (status === 0) يُبقيه لمحاولة لاحقة.
-            if (result.ok || result.status !== 0) {
+            // نجاح الإرسال، أو رفض واضح ونهائي من الخادم (مثل بيانات غير
+            // صالحة) يعني "انتهى أمر هذا الطلب من منظور إعادة المحاولة"
+            // ويجب إزالته من الطابور. لكن استمرار انقطاع الاتصال — سواء ظهر
+            // كفشل fetch تام (status === 0) أو كاستجابة بديلة من الـ Service
+            // Worker برمز "OFFLINE" (503) — يجب أن يُبقي الطلب في الطابور
+            // لمحاولة لاحقة، وليس حذفه كأنه اكتمل.
+            const stillOffline = !result.ok && (
+                result.status === 0 ||
+                (result.data && result.data.code === "OFFLINE")
+            );
+
+            if (result.ok || !stillOffline) {
                 await removeQueuedOrder(item.idempotencyKey);
                 synced++;
+            } else {
+                // لا يزال غير متصل — أوقف محاولة بقية الطابور في هذه الدورة
+                // (لا فائدة من تجربة بقية الطلبات إن كان الاتصال منقطعًا أصلًا)
+                break;
             }
         } catch {
             // تجاهل واستمر للطلب التالي — سيُعاد المحاولة لاحقًا
