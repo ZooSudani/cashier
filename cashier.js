@@ -127,6 +127,20 @@
             return;
         }
 
+        // انقطاع اتصال (فشل fetch تام أو استجابة بديلة من Service Worker
+        // برمز OFFLINE) — لا نملك معلومة جديدة موثوقة عن حالة الوردية، فنُبقي
+        // على آخر حالة معروفة (currentShift الحالية) بدل اعتبارها "مغلقة"
+        // خطأً، وهو ما كان يمنع الكاشير من إكمال البيع وهو لا يزال في وردية
+        // مفتوحة فعليًا على الخادم.
+        const isOfflineFailure = !result.ok && (
+            result.status === 0 ||
+            (result.data && result.data.code === "OFFLINE")
+        );
+        if (isOfflineFailure) {
+            renderShiftStatus();
+            return;
+        }
+
         currentShift = (result.ok && result.data) ? result.data.shift : null;
         renderShiftStatus();
     }
