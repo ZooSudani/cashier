@@ -30,6 +30,8 @@
         shiftToggleBtn: document.getElementById("shift-toggle-btn"),
         logoutBtn: document.getElementById("logout-btn"),
         shiftLiveSummary: document.getElementById("shift-live-summary"),
+        offlineQueueBadge: document.getElementById("offline-queue-badge"),
+        offlineQueueCount: document.getElementById("offline-queue-count"),
         shiftLiveOrders: document.getElementById("shift-live-orders"),
         shiftLiveCash: document.getElementById("shift-live-cash"),
         previewOrderCount: document.getElementById("preview-order-count"),
@@ -97,6 +99,12 @@
         await loadMenu();
 
         bindEvents();
+
+        // محاولة مزامنة أي طلبات محفوظة محليًا من انقطاع سابق، ثم الاستماع
+        // لعودة الاتصال لمزامنة تلقائية فورية بدلًا من انتظار فتح التطبيق يدويًا.
+        await updateOfflineQueueBadge();
+        trySyncOfflineOrders();
+        window.addEventListener("online", trySyncOfflineOrders);
     }
 
     function safeSessionGet(key) {
@@ -423,6 +431,25 @@
 
         setButtonLoading(el.confirmOrderBtn, false);
 
+        // فشل شبكة حقيقي (لا اتصال بالإنترنت إطلاقًا) — وليس رفضًا من الخادم
+        // (مثل بيانات ناقصة أو صنف غير متوفر). في هذه الحالة فقط نحفظ الطلب
+        // محليًا في IndexedDB بدل فقدانه، ونعامله كنجاح من منظور الكاشير.
+        if (!result.ok && result.status === 0) {
+            try {
+                await queueOfflineOrder(payload, lastOrderIdempotencyKey);
+            } catch (err) {
+                showAlert(el.paymentAlertBox, "تعذّر حفظ الطلب — لا اتصال ولا مساحة تخزين محلية");
+                return;
+            }
+
+            lastOrderIdempotencyKey = null;
+            clearCart();
+            closeSheet(el.paymentSheetOverlay);
+            showOfflineQueuedSuccess(payload);
+            updateOfflineQueueBadge();
+            return;
+        }
+
         if (!result.ok) {
             const message = (result.data && result.data.error) || "فشل إنشاء الطلب";
             showAlert(el.paymentAlertBox, message);
@@ -452,11 +479,44 @@
         openSheet(el.successSheetOverlay);
     }
 
+    /** عرض تأكيد مختلف بصريًا عند حفظ الطلب محليًا بانتظار الإنترنت */
+    function showOfflineQueuedSuccess(payload) {
+        lastCompletedOrder = null; // لا يوجد public_id حقيقي بعد — لا طباعة فورية ممكنة
+        el.successOrderId.textContent = "تم حفظ الطلب محليًا — سيُرسل تلقائيًا عند عودة الاتصال";
+        openSheet(el.successSheetOverlay);
+    }
+
+    // ------------------------------------------------------------------
+    // مزامنة الطلبات المحفوظة أثناء انقطاع الاتصال (Offline Queue)
+    // ------------------------------------------------------------------
+    async function updateOfflineQueueBadge() {
+        const count = await countQueuedOrders().catch(() => 0);
+        if (count > 0) {
+            el.offlineQueueBadge.style.display = "flex";
+            el.offlineQueueCount.textContent = count;
+        } else {
+            el.offlineQueueBadge.style.display = "none";
+        }
+    }
+
+    async function trySyncOfflineOrders() {
+        const before = await countQueuedOrders().catch(() => 0);
+        if (before === 0) return;
+
+        await syncQueuedOrders();
+        await updateOfflineQueueBadge();
+        await refreshShiftStatus(); // الأرقام الحية قد تغيّرت بعد المزامنة
+    }
+
     // ------------------------------------------------------------------
     // الطباعة
     // ------------------------------------------------------------------
     function printReceipt() {
-        if (!lastCompletedOrder) return;
+        if (!lastCompletedOrder) {
+            // طلب مؤجَّل للمزامنة (Offline) — لا يملك رقمًا رسميًا بعد لطباعته
+            alert("سيتوفر إيصال هذا الطلب بعد مزامنته مع الخادم عند عودة الاتصال");
+            return;
+        }
         const order = lastCompletedOrder;
 
         document.getElementById("print-restaurant-name").textContent = el.restaurantName.textContent || "كاشير";
@@ -565,6 +625,7 @@
     // ------------------------------------------------------------------
     function bindEvents() {
         el.shiftToggleBtn.addEventListener("click", openShiftSheet);
+        el.offlineQueueBadge.addEventListener("click", trySyncOfflineOrders);
         el.logoutBtn.addEventListener("click", handleLogout);
         el.closeShiftSheetBtn.addEventListener("click", () => closeSheet(el.shiftSheetOverlay));
         el.confirmOpenShiftBtn.addEventListener("click", handleOpenShift);
