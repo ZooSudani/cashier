@@ -32,10 +32,12 @@
     --color-cash:          #6FA287;
     --color-bankk:         #4FA6D8;
 
+    /* الطباعة */
     --font-display: 'Tajawal', 'Segoe UI', sans-serif;
     --font-body:    'IBM Plex Sans Arabic', 'Segoe UI', sans-serif;
     --font-mono:    'IBM Plex Mono', ui-monospace, monospace;
 
+    /* المسافات */
     --space-1: 4px;
     --space-2: 8px;
     --space-3: 12px;
@@ -50,6 +52,7 @@
 
     --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.35);
 
+    /* ارتفاعات لمس مريحة (Touch-First) */
     --tap-target-min: 48px;
     --tap-target-lg: 64px;
 }
@@ -135,6 +138,7 @@ a {
     padding: 0 var(--space-4);
 }
 
+/* عنصر مميز: حافة مسننة تحاكي قصّ إيصال الطابعة الحرارية */
 .receipt-edge {
     height: 14px;
     width: 100%;
@@ -148,12 +152,14 @@ a {
     transform: scaleY(-1);
 }
 
+/* خط متقطع يشبه نقاط الطباعة الحرارية */
 .dot-divider {
     border: none;
     border-top: 2px dotted var(--color-border-strong);
     margin: var(--space-4) 0;
 }
 
+/* بطاقات */
 .card {
     background: var(--color-bg-elevated);
     border-radius: var(--radius-lg);
@@ -322,12 +328,13 @@ a {
     to   { opacity: 1; transform: translateY(0); }
 }
 
+/* شارات الأرقام/المبالغ */
 .mono {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
 }
 
-/* مؤشر تحميل */
+/* مؤشر تحميل بسيط داخل الأزرار */
 .spinner {
     width: 18px;
     height: 18px;
@@ -444,6 +451,28 @@ a {
     flex-shrink: 0;
 }
 
+/* شارة طلبات محفوظة محليًا بانتظار الإرسال */
+.offline-queue-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 40px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-sm);
+    background: rgba(224, 100, 78, 0.16);
+    border: 1.5px solid var(--color-danger);
+    color: var(--color-danger);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 13px;
+    animation: offline-badge-pulse 2s ease-in-out infinite;
+}
+
+@keyframes offline-badge-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.65; }
+}
+
 .close-preview-box {
     background: var(--color-bg);
     border: 1.5px solid var(--color-border);
@@ -556,7 +585,7 @@ a {
     padding-bottom: 96px;
 }
 
-/* رقائق التصنيفات */
+/* رقائق التصنيفات القابلة للتمرير أفقيًا */
 .category-scroll {
     display: flex;
     gap: var(--space-2);
@@ -969,7 +998,7 @@ a {
 }
 
 /* ----------------------------------------------------------------------------
-   إيصال الطباعة (Print) — يظهر فقط عند الطباعة، مخفي في الاستخدام العادي
+   إيصال الطباعة (Print)
    ---------------------------------------------------------------------------- */
 .print-receipt {
     display: none;
@@ -1115,7 +1144,7 @@ a {
     font-size: 15px;
 }
 
-/* زر أيقونة مع تسمية نصية توضيحية أسفله */
+/* زر أيقونة مع تسمية نصية توضيحية */
 .icon-btn-labeled {
     display: flex;
     flex-direction: column;
