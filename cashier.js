@@ -649,7 +649,6 @@
     // ------------------------------------------------------------------
     function bindEvents() {
         el.shiftToggleBtn.addEventListener("click", openShiftSheet);
-        el.offlineQueueBadge.addEventListener("click", trySyncOfflineOrders);
         el.logoutBtn.addEventListener("click", handleLogout);
         el.closeShiftSheetBtn.addEventListener("click", () => closeSheet(el.shiftSheetOverlay));
         el.confirmOpenShiftBtn.addEventListener("click", handleOpenShift);
